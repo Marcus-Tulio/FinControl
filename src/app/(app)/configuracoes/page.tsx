@@ -6,6 +6,7 @@ import { ProfileForm } from "@/components/settings/profile-form";
 import { PasswordForm } from "@/components/settings/password-form";
 import { PinForm } from "@/components/settings/pin-form";
 import { AppearanceSection } from "@/components/settings/appearance-section";
+import { BackupSection } from "@/components/settings/backup-section";
 
 export default async function ConfiguracoesPage() {
   const user = await getCurrentUser();
@@ -56,6 +57,16 @@ export default async function ConfiguracoesPage() {
         </CardHeader>
         <CardContent>
           <AppearanceSection />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Backup</CardTitle>
+          <CardDescription>Exporte uma cópia completa dos seus dados.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BackupSection />
         </CardContent>
       </Card>
     </div>

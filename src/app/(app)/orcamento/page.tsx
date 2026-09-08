@@ -3,16 +3,9 @@ import { getBudgetsForMonth, getCategoriesWithoutBudget } from "@/server/queries
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { DynamicIcon } from "@/components/dynamic-icon";
 import { BudgetFormDialog } from "@/components/budget/budget-form-dialog";
+import { BudgetRow } from "@/components/budget/budget-row";
 import { formatCurrency, formatMonthYear } from "@/lib/format";
-import { budgetStatus } from "@/lib/finance";
-
-const STATUS_COLOR = {
-  ok: "var(--status-good)",
-  warning: "var(--status-warning)",
-  danger: "var(--status-critical)",
-};
 
 export default async function OrcamentoPage() {
   const userId = await requireUserId();
@@ -50,48 +43,22 @@ export default async function OrcamentoPage() {
         />
       ) : (
         <div className="space-y-3">
-          {budgets.map((budget) => {
-            const status = budgetStatus(budget.limitAmount, budget.spent);
-            return (
-              <div key={budget.id} className="rounded-xl border border-border p-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `${budget.category.color}1a`, color: budget.category.color }}
-                  >
-                    <DynamicIcon name={budget.category.icon} className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{budget.category.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(status.spent)} de {formatCurrency(status.limit)} · disponível {formatCurrency(status.available)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums" style={{ color: STATUS_COLOR[status.level] }}>
-                    {Math.round(status.percentUsed * 100)}%
-                  </span>
-                  <BudgetFormDialog
-                    categories={[{ id: budget.categoryId, name: budget.category.name }]}
-                    month={month}
-                    year={year}
-                    existing={{ categoryId: budget.categoryId, limitAmount: Number(budget.limitAmount) }}
-                  />
-                </div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(status.percentUsed * 100, 100)}%`, backgroundColor: STATUS_COLOR[status.level] }}
-                  />
-                </div>
-                {status.level === "danger" && (
-                  <p className="mt-2 text-xs font-medium text-destructive">Orçamento ultrapassado!</p>
-                )}
-                {status.level === "warning" && (
-                  <p className="mt-2 text-xs font-medium" style={{ color: STATUS_COLOR.warning }}>Você está perto do limite.</p>
-                )}
-              </div>
-            );
-          })}
+          {budgets.map((budget) => (
+            <BudgetRow
+              key={budget.id}
+              category={budget.category}
+              limitAmount={budget.limitAmount}
+              spent={budget.spent}
+              action={
+                <BudgetFormDialog
+                  categories={[{ id: budget.categoryId, name: budget.category.name }]}
+                  month={month}
+                  year={year}
+                  existing={{ categoryId: budget.categoryId, limitAmount: Number(budget.limitAmount) }}
+                />
+              }
+            />
+          ))}
         </div>
       )}
     </div>

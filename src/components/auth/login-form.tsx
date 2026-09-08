@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function LoginForm({ googleEnabled, appleEnabled }: { googleEnabled: boolean; appleEnabled: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -60,15 +60,24 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
           </Button>
         </form>
 
-        {googleEnabled && (
+        {(googleEnabled || appleEnabled) && (
           <>
             <div className="relative py-2 text-center text-xs text-muted-foreground">
               <span className="bg-card px-2">ou continue com</span>
               <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-border" />
             </div>
-            <Button variant="outline" className="w-full" onClick={() => signIn("google", { callbackUrl })}>
-              Google
-            </Button>
+            <div className="space-y-2">
+              {googleEnabled && (
+                <Button variant="outline" className="w-full" onClick={() => signIn("google", { callbackUrl })}>
+                  Google
+                </Button>
+              )}
+              {appleEnabled && (
+                <Button variant="outline" className="w-full" onClick={() => signIn("apple", { callbackUrl })}>
+                  Apple
+                </Button>
+              )}
+            </div>
           </>
         )}
 

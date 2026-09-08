@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { createContext, useActionState, useContext, useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -193,6 +193,30 @@ function TransferForm({ accounts, onDone }: { accounts: Account[]; onDone: () =>
   );
 }
 
+type QuickAddContextValue = { open: boolean; setOpen: (open: boolean) => void };
+const QuickAddContext = createContext<QuickAddContextValue | null>(null);
+
+export function QuickAddProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return <QuickAddContext.Provider value={{ open, setOpen }}>{children}</QuickAddContext.Provider>;
+}
+
+export function useQuickAdd() {
+  const ctx = useContext(QuickAddContext);
+  if (!ctx) throw new Error("useQuickAdd deve ser usado dentro de QuickAddProvider");
+  return ctx;
+}
+
+/** Botão que abre o QuickAdd — usar dentro de headers de página; a FAB flutuante já cobre o acesso global. */
+export function QuickAddTrigger({ children, className }: { children: React.ReactNode; className?: string }) {
+  const { setOpen } = useQuickAdd();
+  return (
+    <Button className={className} onClick={() => setOpen(true)}>
+      {children}
+    </Button>
+  );
+}
+
 export function QuickAdd({
   accounts,
   incomeCategories,
@@ -204,7 +228,7 @@ export function QuickAdd({
   expenseCategories: Category[];
   investmentCategories: Category[];
 }) {
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = useQuickAdd();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

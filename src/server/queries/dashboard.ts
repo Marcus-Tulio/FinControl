@@ -1,4 +1,5 @@
 import "server-only";
+import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { toNumber } from "@/lib/format";
 import { getPeriodRange, getPreviousPeriodRange, lastNMonths, type PeriodKey } from "@/lib/period";
@@ -89,6 +90,16 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
       };
     })
     .sort((a, b) => b.value - a.value);
+}
+
+export async function getRecentTransactions(userId: string, limit = 6) {
+  // Exclui datas muito distantes no futuro (ex: parcelas de longo prazo) para não ofuscar a atividade recente real.
+  return prisma.transaction.findMany({
+    where: { userId, date: { lte: addDays(new Date(), 14) } },
+    include: { category: true, financialAccount: true },
+    orderBy: { date: "desc" },
+    take: limit,
+  });
 }
 
 export async function getDashboardSummary(userId: string, period: PeriodKey) {

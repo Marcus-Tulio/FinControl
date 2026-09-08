@@ -21,14 +21,14 @@ export function ImportCsvDialog({ accounts }: { accounts: Account[] }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline"><Upload className="h-4 w-4" /> Importar CSV</Button>} />
+      <DialogTrigger render={<Button variant="outline"><Upload className="h-4 w-4" /> Importar</Button>} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Importar transações via CSV</DialogTitle>
+          <DialogTitle>Importar transações</DialogTitle>
         </DialogHeader>
         <form action={formAction} className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            O arquivo deve conter colunas de data, descrição e valor (valores negativos são despesas, positivos são receitas).
+            Envie um arquivo CSV ou Excel (.xlsx) com colunas de data, descrição e valor (valores negativos são despesas, positivos são receitas).
             Transações duplicadas são detectadas automaticamente.
           </p>
           <div className="space-y-1.5">
@@ -41,12 +41,12 @@ export function ImportCsvDialog({ accounts }: { accounts: Account[] }) {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="file">Arquivo CSV</Label>
+            <Label htmlFor="file">Arquivo (CSV ou Excel)</Label>
             <input
               id="file"
               name="file"
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
               required
               className="w-full rounded-lg border border-input bg-transparent p-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm"
             />

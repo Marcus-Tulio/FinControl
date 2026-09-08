@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +13,21 @@ const emptyState: SettingsFormState = {};
 export function PinForm({ hasPin }: { hasPin: boolean }) {
   const [state, formAction, isPending] = useActionState(updatePin, emptyState);
   const [isRemoving, startRemoveTransition] = useTransition();
+  const { update } = useSession();
 
   useEffect(() => {
-    if (state.success) toast.success("PIN atualizado");
+    if (state.success) {
+      toast.success("PIN atualizado");
+      // update() sem argumentos só refaz um GET; precisa de um payload para disparar trigger "update" no callback JWT.
+      update({});
+    }
   }, [state.success]);
 
   function handleRemove() {
     startRemoveTransition(async () => {
       await removePin();
       toast.success("PIN removido");
+      await update({});
     });
   }
 

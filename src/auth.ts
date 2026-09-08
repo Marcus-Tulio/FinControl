@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import type { Provider } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,18 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
+if (process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
+  providers.push(
+    Apple({
+      clientId: process.env.APPLE_CLIENT_ID,
+      // O "client secret" da Apple não é uma string fixa: é um JWT assinado com a chave privada do
+      // Apple Developer (Team ID + Key ID + .p8), com validade máxima de 6 meses. Gere-o via
+      // `npx auth apple secret` (pacote `next-auth`) ou os scripts da própria Apple, e renove antes de expirar.
+      clientSecret: process.env.APPLE_CLIENT_SECRET,
+    })
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   adapter: PrismaAdapter(prisma),
@@ -47,15 +60,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
+      }
+      if (user || trigger === "update") {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { pinHash: true } });
+        token.hasPin = Boolean(dbUser?.pinHash);
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
+        session.user.hasPin = Boolean(token.hasPin);
       }
       return session;
     },

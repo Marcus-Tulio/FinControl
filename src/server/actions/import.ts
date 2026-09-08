@@ -1,6 +1,7 @@
 "use server";
 
 import Papa from "papaparse";
+import ExcelJS from "exceljs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
@@ -47,6 +48,58 @@ function findColumn(headers: string[], candidates: string[]): string | undefined
   return undefined;
 }
 
+function isExcelFile(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return name.endsWith(".xlsx") || name.endsWith(".xls") || file.type.includes("spreadsheet");
+}
+
+function cellToString(value: ExcelJS.CellValue): string {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) {
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  }
+  if (typeof value === "object") {
+    if ("result" in value) return String(value.result ?? ""); // célula de fórmula
+    if ("text" in value) return String(value.text ?? ""); // rich text
+    if ("richText" in value) return value.richText.map((r) => r.text).join("");
+  }
+  return String(value);
+}
+
+async function parseExcelRows(file: File): Promise<{ headers: string[]; data: Record<string, string>[] }> {
+  const buffer = await file.arrayBuffer();
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) return { headers: [], data: [] };
+
+  const headers: string[] = [];
+  worksheet.getRow(1).eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    headers[colNumber - 1] = cellToString(cell.value).trim();
+  });
+
+  const data: Record<string, string>[] = [];
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return;
+    const record: Record<string, string> = {};
+    headers.forEach((header, idx) => {
+      if (!header) return;
+      record[header] = cellToString(row.getCell(idx + 1).value);
+    });
+    data.push(record);
+  });
+
+  return { headers, data };
+}
+
+async function parseFileRows(file: File): Promise<{ headers: string[]; data: Record<string, string>[] }> {
+  if (isExcelFile(file)) return parseExcelRows(file);
+
+  const text = await file.text();
+  const parsed = Papa.parse<Record<string, string>>(text, { header: true, skipEmptyLines: true });
+  return { headers: parsed.meta.fields ?? [], data: parsed.data };
+}
+
 export async function importTransactionsCsv(
   financialAccountId: string,
   _prev: ImportResult,
@@ -58,26 +111,31 @@ export async function importTransactionsCsv(
   if (!account) return { error: "Conta não encontrada" };
 
   const file = formData.get("file") as File | null;
-  if (!file || file.size === 0) return { error: "Selecione um arquivo CSV" };
+  if (!file || file.size === 0) return { error: "Selecione um arquivo" };
 
-  const text = await file.text();
-  const parsed = Papa.parse<Record<string, string>>(text, { header: true, skipEmptyLines: true });
-  if (parsed.errors.length && !parsed.data.length) {
-    return { error: "Não foi possível ler o arquivo CSV" };
+  let headers: string[];
+  let rowsData: Record<string, string>[];
+  try {
+    const parsed = await parseFileRows(file);
+    headers = parsed.headers;
+    rowsData = parsed.data;
+  } catch {
+    return { error: "Não foi possível ler o arquivo. Verifique o formato (CSV ou Excel)." };
   }
-
-  const headers = parsed.meta.fields ?? [];
+  if (rowsData.length === 0) {
+    return { error: "Não foi possível ler o arquivo. Verifique o formato (CSV ou Excel)." };
+  }
   const dateCol = findColumn(headers, ["data", "date"]);
   const descCol = findColumn(headers, ["descri", "histor", "description", "memo"]);
   const amountCol = findColumn(headers, ["valor", "amount", "value"]);
   const categoryCol = findColumn(headers, ["categoria", "category"]);
 
   if (!dateCol || !descCol || !amountCol) {
-    return { error: "O CSV precisa ter colunas de data, descrição e valor" };
+    return { error: "O arquivo precisa ter colunas de data, descrição e valor" };
   }
 
   const rows: ParsedRow[] = [];
-  for (const row of parsed.data) {
+  for (const row of rowsData) {
     const date = parseDate(row[dateCol] ?? "");
     const amountRaw = row[amountCol] ?? "";
     const amount = parseAmount(amountRaw);

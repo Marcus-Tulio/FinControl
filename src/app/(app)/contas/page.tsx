@@ -51,7 +51,9 @@ export default async function ContasPage() {
                   </div>
                   <AccountFormDialog account={serializeDecimals(account)} />
                 </div>
-                <p className="mt-4 text-2xl font-semibold tabular-nums tracking-tight">{formatCurrency(account.balance)}</p>
+                <p className={`mt-4 text-2xl font-semibold tabular-nums tracking-tight ${account.balance < 0 ? "text-negative" : ""}`}>
+                  {formatCurrency(account.balance)}
+                </p>
                 <Link href={`/contas/${account.id}`} className="mt-2 inline-block text-xs font-medium text-primary hover:underline">
                   Ver histórico →
                 </Link>

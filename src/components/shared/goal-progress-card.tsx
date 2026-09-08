@@ -17,6 +17,7 @@ export function GoalProgressCard({
   currentAmount: number;
 }) {
   const percent = goalProgressPercent(targetAmount, currentAmount);
+  const remaining = Math.max(targetAmount - currentAmount, 0);
 
   return (
     <div className="rounded-xl border border-border p-4">
@@ -33,9 +34,11 @@ export function GoalProgressCard({
             {formatCurrency(currentAmount)} de {formatCurrency(targetAmount)}
           </p>
         </div>
-        <span className="shrink-0 text-sm font-semibold tabular-nums">{Math.round(percent * 100)}%</span>
       </div>
       <Progress value={percent * 100} className="mt-3 h-2" />
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        {Math.round(percent * 100)}% · faltam {formatCurrency(remaining)}
+      </p>
     </div>
   );
 }

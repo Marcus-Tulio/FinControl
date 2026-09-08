@@ -2,10 +2,12 @@
 
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
 import { DEFAULT_CATEGORIES } from "@/lib/constants";
+import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
 
 export type RegisterFormState = { error?: string; success?: boolean };
 
@@ -110,6 +112,17 @@ export async function changePassword(_prev: SettingsFormState, formData: FormDat
 
 const pinSchema = z.object({ pin: z.string().regex(/^\d{4,6}$/, "O PIN deve ter de 4 a 6 dígitos") });
 
+async function setPinCookie(userId: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(PIN_COOKIE, await signPinToken(userId), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: PIN_COOKIE_MAX_AGE,
+  });
+}
+
 export async function updatePin(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {
   const userId = await requireUserId();
   const parsed = pinSchema.safeParse(Object.fromEntries(formData));
@@ -117,6 +130,8 @@ export async function updatePin(_prev: SettingsFormState, formData: FormData): P
 
   const pinHash = await bcrypt.hash(parsed.data.pin, 10);
   await prisma.user.update({ where: { id: userId }, data: { pinHash } });
+  // Quem está definindo o PIN acabou de digitá-lo e já está numa sessão autenticada — considera-se já desbloqueado.
+  await setPinCookie(userId);
   revalidatePath("/configuracoes");
   return { success: true };
 }
@@ -124,6 +139,27 @@ export async function updatePin(_prev: SettingsFormState, formData: FormData): P
 export async function removePin(): Promise<SettingsFormState> {
   const userId = await requireUserId();
   await prisma.user.update({ where: { id: userId }, data: { pinHash: null } });
+  const cookieStore = await cookies();
+  cookieStore.delete(PIN_COOKIE);
   revalidatePath("/configuracoes");
+  return { success: true };
+}
+
+const verifyPinSchema = z.object({ pin: z.string().min(1, "Informe o PIN") });
+
+export type VerifyPinState = { error?: string; success?: boolean };
+
+export async function verifyPin(_prev: VerifyPinState, formData: FormData): Promise<VerifyPinState> {
+  const userId = await requireUserId();
+  const parsed = verifyPinSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Informe o PIN" };
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { pinHash: true } });
+  if (!user?.pinHash) return { success: true };
+
+  const valid = await bcrypt.compare(parsed.data.pin, user.pinHash);
+  if (!valid) return { error: "PIN incorreto" };
+
+  await setPinCookie(userId);
   return { success: true };
 }

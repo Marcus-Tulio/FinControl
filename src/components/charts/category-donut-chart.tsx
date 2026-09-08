@@ -25,7 +25,7 @@ export function CategoryDonutChart({ data }: { data: CategorySlice[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="mx-auto h-[200px] w-[200px] shrink-0">
+      <div className="relative mx-auto h-[200px] w-[200px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -45,6 +45,10 @@ export function CategoryDonutChart({ data }: { data: CategorySlice[] }) {
             <Tooltip content={<ChartTooltip />} />
           </PieChart>
         </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Total</span>
+          <span className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</span>
+        </div>
       </div>
       <div className="flex-1 space-y-2">
         {prepared.map((entry, i) => (

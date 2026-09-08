@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { PIN_COOKIE, verifyPinToken } from "@/lib/pin";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
@@ -22,6 +23,22 @@ export default async function middleware(req: NextRequest) {
   }
 
   if (token && (pathname === "/login" || pathname === "/register")) {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
+  }
+
+  if (token?.id && pathname !== "/desbloquear" && !isPublic) {
+    if (token.hasPin) {
+      const cookieValue = req.cookies.get(PIN_COOKIE)?.value;
+      const unlocked = await verifyPinToken(token.id, cookieValue);
+      if (!unlocked) {
+        const url = new URL("/desbloquear", req.nextUrl.origin);
+        url.searchParams.set("callbackUrl", pathname);
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
+  if (token?.id && pathname === "/desbloquear" && !token.hasPin) {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
