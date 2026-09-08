@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { PIN_COOKIE, verifyPinToken } from "@/lib/pin";
 
-const PUBLIC_PATHS = ["/login", "/register"];
+const PUBLIC_PATHS = ["/login", "/register", "/esqueci-senha", "/redefinir-senha"];
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

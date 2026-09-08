@@ -10,7 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export function LoginForm({ googleEnabled, appleEnabled }: { googleEnabled: boolean; appleEnabled: boolean }) {
+export function LoginForm({
+  googleEnabled,
+  appleEnabled,
+  microsoftEnabled,
+}: {
+  googleEnabled: boolean;
+  appleEnabled: boolean;
+  microsoftEnabled: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -52,7 +60,12 @@ export function LoginForm({ googleEnabled, appleEnabled }: { googleEnabled: bool
             <Input id="email" name="email" type="email" placeholder="voce@exemplo.com" required autoComplete="email" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Senha</Label>
+              <Link href="/esqueci-senha" className="text-xs font-medium text-primary hover:underline">
+                Esqueceu a senha?
+              </Link>
+            </div>
             <Input id="password" name="password" type="password" required autoComplete="current-password" />
           </div>
           <Button type="submit" className="w-full" disabled={isPending}>
@@ -60,7 +73,7 @@ export function LoginForm({ googleEnabled, appleEnabled }: { googleEnabled: bool
           </Button>
         </form>
 
-        {(googleEnabled || appleEnabled) && (
+        {(googleEnabled || appleEnabled || microsoftEnabled) && (
           <>
             <div className="relative py-2 text-center text-xs text-muted-foreground">
               <span className="bg-card px-2">ou continue com</span>
@@ -75,6 +88,15 @@ export function LoginForm({ googleEnabled, appleEnabled }: { googleEnabled: bool
               {appleEnabled && (
                 <Button variant="outline" className="w-full" onClick={() => signIn("apple", { callbackUrl })}>
                   Apple
+                </Button>
+              )}
+              {microsoftEnabled && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => signIn("microsoft-entra-id", { callbackUrl })}
+                >
+                  Microsoft
                 </Button>
               )}
             </div>

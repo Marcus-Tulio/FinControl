@@ -3,6 +3,7 @@ import type { Provider } from "next-auth/providers";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Apple from "next-auth/providers/apple";
+import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -47,6 +48,18 @@ if (process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
       // Apple Developer (Team ID + Key ID + .p8), com validade máxima de 6 meses. Gere-o via
       // `npx auth apple secret` (pacote `next-auth`) ou os scripts da própria Apple, e renove antes de expirar.
       clientSecret: process.env.APPLE_CLIENT_SECRET,
+    })
+  );
+}
+
+if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
+  providers.push(
+    MicrosoftEntraID({
+      clientId: process.env.MICROSOFT_CLIENT_ID,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+      // Sem "issuer", o padrão é o endpoint "common", que aceita contas pessoais
+      // (Outlook/Hotmail/Live) e contas corporativas/escolares (Microsoft 365) — exatamente o
+      // comportamento desejado para login social genérico.
     })
   );
 }
