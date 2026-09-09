@@ -7,6 +7,7 @@ import { PasswordForm } from "@/components/settings/password-form";
 import { PinForm } from "@/components/settings/pin-form";
 import { AppearanceSection } from "@/components/settings/appearance-section";
 import { BackupSection } from "@/components/settings/backup-section";
+import { DangerZoneSection } from "@/components/settings/danger-zone-section";
 
 export default async function ConfiguracoesPage() {
   const user = await getCurrentUser();
@@ -67,6 +68,16 @@ export default async function ConfiguracoesPage() {
         </CardHeader>
         <CardContent>
           <BackupSection />
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/30">
+        <CardHeader>
+          <CardTitle className="text-base text-destructive">Zona de risco</CardTitle>
+          <CardDescription>Ações permanentes — não podem ser desfeitas.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DangerZoneSection hasPassword={hasPassword} />
         </CardContent>
       </Card>
     </div>

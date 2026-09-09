@@ -6,9 +6,8 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
-import { DEFAULT_CATEGORIES } from "@/lib/constants";
 import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
-import { deriveShades } from "@/lib/color-shades";
+import { seedDefaultData } from "@/server/seed-defaults";
 
 export type RegisterFormState = { error?: string; success?: boolean };
 
@@ -36,52 +35,7 @@ export async function registerUser(_prev: RegisterFormState, formData: FormData)
     data: { name, email, passwordHash },
   });
 
-  await prisma.category.createMany({
-    data: DEFAULT_CATEGORIES.flatMap((c) => {
-      const rows = [{ userId: user.id, name: c.name, kind: c.kind, icon: c.icon, color: c.color, isDefault: true }];
-      return rows;
-    }),
-  });
-
-  const parents = await prisma.category.findMany({ where: { userId: user.id, isDefault: true } });
-  for (const c of DEFAULT_CATEGORIES) {
-    if (!c.subcategories?.length) continue;
-    const parent = parents.find((p) => p.name === c.name);
-    if (!parent) continue;
-    const shades = deriveShades(c.color, c.subcategories.length);
-    await prisma.category.createMany({
-      data: c.subcategories.map((sub, i) => ({
-        userId: user.id,
-        name: sub.name,
-        kind: c.kind,
-        icon: sub.icon,
-        color: shades[i],
-        parentId: parent.id,
-        isDefault: true,
-      })),
-    });
-  }
-
-  await prisma.financialAccount.createMany({
-    data: [
-      {
-        userId: user.id,
-        name: "Carteira",
-        type: "CASH",
-        color: "#6366f1",
-        icon: "wallet",
-        initialBalance: 0,
-      },
-      {
-        userId: user.id,
-        name: "Conta bancária",
-        type: "CHECKING",
-        color: "#2a78d6",
-        icon: "landmark",
-        initialBalance: 0,
-      },
-    ],
-  });
+  await seedDefaultData(user.id);
 
   return { success: true };
 }
