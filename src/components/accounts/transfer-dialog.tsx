@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { transferBetweenAccounts, type AccountFormState } from "@/server/actions/accounts";
 
 type Account = { id: string; name: string };
@@ -16,6 +17,7 @@ const emptyState: AccountFormState = {};
 export function TransferDialog({ accounts }: { accounts: Account[] }) {
   const [state, formAction, isPending] = useActionState(transferBetweenAccounts, emptyState);
   const [open, setOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const accountItems = Object.fromEntries(accounts.map((a) => [a.id, a.name]));
 
@@ -24,6 +26,7 @@ export function TransferDialog({ accounts }: { accounts: Account[] }) {
       toast.success("Transferência realizada");
       formRef.current?.reset();
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -54,7 +57,7 @@ export function TransferDialog({ accounts }: { accounts: Account[] }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Valor</Label>
-              <Input name="amount" type="number" step="0.01" min="0.01" required />
+              <CurrencyInput key={resetKey} name="amount" required />
             </div>
             <div className="space-y-1.5">
               <Label>Data</Label>

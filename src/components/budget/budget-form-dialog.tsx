@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { upsertBudget, type BudgetFormState } from "@/server/actions/budgets";
 
 const emptyState: BudgetFormState = {};
@@ -25,11 +25,13 @@ export function BudgetFormDialog({
 }) {
   const [state, formAction, isPending] = useActionState(upsertBudget, emptyState);
   const [open, setOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success("Orçamento salvo");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -64,7 +66,7 @@ export function BudgetFormDialog({
 
           <div className="space-y-1.5">
             <Label>Limite mensal</Label>
-            <Input name="limitAmount" type="number" step="0.01" min="0.01" required defaultValue={existing?.limitAmount} />
+            <CurrencyInput key={resetKey} name="limitAmount" required defaultValue={existing?.limitAmount} />
           </div>
 
           {state.error && <p className="text-sm text-destructive">{state.error}</p>}

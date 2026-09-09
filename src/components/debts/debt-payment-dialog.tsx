@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { addDebtPayment, type DebtFormState } from "@/server/actions/debts";
 
 const emptyState: DebtFormState = {};
@@ -15,11 +16,13 @@ export function DebtPaymentDialog({ debtId, debtName, suggestedAmount }: { debtI
   const action = addDebtPayment.bind(null, debtId);
   const [state, formAction, isPending] = useActionState(action, emptyState);
   const [open, setOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success("Pagamento registrado");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -33,7 +36,7 @@ export function DebtPaymentDialog({ debtId, debtName, suggestedAmount }: { debtI
         <form action={formAction} className="space-y-3">
           <div className="space-y-1.5">
             <Label>Valor</Label>
-            <Input name="amount" type="number" step="0.01" min="0.01" required defaultValue={suggestedAmount} autoFocus />
+            <CurrencyInput key={resetKey} name="amount" required defaultValue={suggestedAmount} autoFocus />
           </div>
           <div className="space-y-1.5">
             <Label>Data</Label>

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { createDebt, updateDebt, type DebtFormState } from "@/server/actions/debts";
 import { DEBT_TYPE_LABELS } from "@/lib/constants";
 import type { DebtType } from "@prisma/client";
@@ -28,11 +29,13 @@ export function DebtFormDialog({ debt }: { debt?: Debt }) {
   const action = isEdit ? updateDebt.bind(null, debt!.id) : createDebt;
   const [state, formAction, isPending] = useActionState(action, emptyState);
   const [open, setOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success(isEdit ? "Dívida atualizada" : "Dívida cadastrada");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -72,11 +75,11 @@ export function DebtFormDialog({ debt }: { debt?: Debt }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Valor original</Label>
-              <Input name="originalAmount" type="number" step="0.01" required defaultValue={debt ? Number(debt.originalAmount) : undefined} />
+              <CurrencyInput key={resetKey} name="originalAmount" required defaultValue={debt ? Number(debt.originalAmount) : undefined} />
             </div>
             <div className="space-y-1.5">
               <Label>Valor restante</Label>
-              <Input name="remainingAmount" type="number" step="0.01" required defaultValue={debt ? Number(debt.remainingAmount) : undefined} />
+              <CurrencyInput key={resetKey} name="remainingAmount" required defaultValue={debt ? Number(debt.remainingAmount) : undefined} />
             </div>
           </div>
 
@@ -87,7 +90,7 @@ export function DebtFormDialog({ debt }: { debt?: Debt }) {
             </div>
             <div className="space-y-1.5">
               <Label>Valor da parcela</Label>
-              <Input name="installmentAmount" type="number" step="0.01" defaultValue={debt ? Number(debt.installmentAmount ?? 0) : undefined} />
+              <CurrencyInput key={resetKey} name="installmentAmount" defaultValue={debt ? Number(debt.installmentAmount ?? 0) : undefined} />
             </div>
           </div>
 

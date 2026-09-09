@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { addInvestmentMovement, type InvestmentFormState } from "@/server/actions/investments";
 
 const emptyState: InvestmentFormState = {};
@@ -18,11 +19,13 @@ export function InvestmentMovementDialog({ investmentId, name }: { investmentId:
   const [state, formAction, isPending] = useActionState(action, emptyState);
   const [open, setOpen] = useState(false);
   const [type, setType] = useState("CONTRIBUTION");
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success("Movimentação registrada");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -47,7 +50,7 @@ export function InvestmentMovementDialog({ investmentId, name }: { investmentId:
           {type !== "PRICE_UPDATE" && (
             <div className="space-y-1.5">
               <Label>Valor</Label>
-              <Input name="amount" type="number" step="0.01" min="0" required />
+              <CurrencyInput key={resetKey} name="amount" required />
             </div>
           )}
 

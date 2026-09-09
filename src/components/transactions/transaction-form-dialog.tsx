@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { createTransaction, updateTransaction, type TransactionFormState } from "@/server/actions/transactions";
 import type { TransactionKind } from "@prisma/client";
 
@@ -71,6 +72,7 @@ export function TransactionFormDialog({
   const [kind, setKind] = useState<TransactionKind>(transaction?.kind ?? defaultKind);
   const [isRecurring, setIsRecurring] = useState(false);
   const [hasInstallments, setHasInstallments] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -79,6 +81,7 @@ export function TransactionFormDialog({
       setOpen(false);
       formRef.current?.reset();
       setHasInstallments(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -124,7 +127,7 @@ export function TransactionFormDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Valor</Label>
-              <Input name="amount" type="number" step="0.01" min="0.01" required defaultValue={transaction?.amount} />
+              <CurrencyInput key={resetKey} name="amount" required defaultValue={transaction?.amount} />
             </div>
             <div className="space-y-1.5">
               <Label>Data</Label>

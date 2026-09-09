@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { createAccount, updateAccount, type AccountFormState } from "@/server/actions/accounts";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/constants";
 import type { FinancialAccountType } from "@prisma/client";
@@ -31,11 +32,13 @@ export function AccountFormDialog({ account }: { account?: Account }) {
   const [state, formAction, isPending] = useActionState(action, emptyState);
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState(account?.color ?? "#2e9484");
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success(isEdit ? "Conta atualizada" : "Conta criada");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -82,7 +85,7 @@ export function AccountFormDialog({ account }: { account?: Account }) {
 
           <div className="space-y-1.5">
             <Label>{isEdit ? "Saldo inicial" : "Saldo inicial"}</Label>
-            <Input name="initialBalance" type="number" step="0.01" defaultValue={account ? Number(account.initialBalance) : 0} />
+            <CurrencyInput key={resetKey} name="initialBalance" defaultValue={account ? Number(account.initialBalance) : undefined} allowNegative />
           </div>
 
           <div className="space-y-1.5">

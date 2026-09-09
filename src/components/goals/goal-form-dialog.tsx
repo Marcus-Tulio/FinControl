@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { createGoal, updateGoal, type GoalFormState } from "@/server/actions/goals";
 import { GOAL_TYPE_LABELS } from "@/lib/constants";
 import type { GoalType } from "@prisma/client";
@@ -35,11 +36,13 @@ export function GoalFormDialog({ goal }: { goal?: Goal }) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<GoalType>(goal?.type ?? "EMERGENCY_FUND");
   const [color, setColor] = useState(goal?.color ?? "#2e9484");
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     if (state.success) {
       toast.success(isEdit ? "Meta atualizada" : "Meta criada");
       setOpen(false);
+      setResetKey((k) => k + 1);
     }
   }, [state.success]);
 
@@ -82,11 +85,11 @@ export function GoalFormDialog({ goal }: { goal?: Goal }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Valor objetivo</Label>
-              <Input name="targetAmount" type="number" step="0.01" min="0.01" required defaultValue={goal ? Number(goal.targetAmount) : undefined} />
+              <CurrencyInput key={resetKey} name="targetAmount" required defaultValue={goal ? Number(goal.targetAmount) : undefined} />
             </div>
             <div className="space-y-1.5">
               <Label>Valor já acumulado</Label>
-              <Input name="currentAmount" type="number" step="0.01" min="0" defaultValue={goal ? Number(goal.currentAmount) : 0} />
+              <CurrencyInput key={resetKey} name="currentAmount" defaultValue={goal ? Number(goal.currentAmount) : undefined} />
             </div>
           </div>
 

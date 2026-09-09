@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
+import { CurrencyInput } from "@/components/shared/currency-input";
 import { createTransaction, type TransactionFormState } from "@/server/actions/transactions";
 import { transferBetweenAccounts, type AccountFormState } from "@/server/actions/accounts";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ function IncomeExpenseForm({
   const [state, formAction, isPending] = useActionState(createTransaction, emptyTx);
   const [isRecurring, setIsRecurring] = useState(false);
   const [hasInstallments, setHasInstallments] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   const successLabel = kind === "INCOME" ? "Receita adicionada" : kind === "EXPENSE" ? "Despesa adicionada" : "Investimento registrado";
@@ -47,6 +49,7 @@ function IncomeExpenseForm({
       toast.success(successLabel);
       formRef.current?.reset();
       setHasInstallments(false);
+      setResetKey((k) => k + 1);
       onDone();
     }
   }, [state.success]);
@@ -64,7 +67,7 @@ function IncomeExpenseForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>Valor</Label>
-          <Input name="amount" type="number" step="0.01" min="0.01" required placeholder="0,00" />
+          <CurrencyInput key={resetKey} name="amount" required />
         </div>
         <div className="space-y-1.5">
           <Label>Data</Label>
@@ -143,12 +146,14 @@ function IncomeExpenseForm({
 
 function TransferForm({ accounts, onDone }: { accounts: Account[]; onDone: () => void }) {
   const [state, formAction, isPending] = useActionState(transferBetweenAccounts, emptyTransfer);
+  const [resetKey, setResetKey] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.success) {
       toast.success("Transferência realizada");
       formRef.current?.reset();
+      setResetKey((k) => k + 1);
       onDone();
     }
   }, [state.success]);
@@ -178,7 +183,7 @@ function TransferForm({ accounts, onDone }: { accounts: Account[]; onDone: () =>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>Valor</Label>
-          <Input name="amount" type="number" step="0.01" min="0.01" required placeholder="0,00" />
+          <CurrencyInput key={resetKey} name="amount" required />
         </div>
         <div className="space-y-1.5">
           <Label>Data</Label>
