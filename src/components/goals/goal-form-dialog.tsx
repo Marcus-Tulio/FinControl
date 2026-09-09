@@ -69,7 +69,7 @@ export function GoalFormDialog({ goal }: { goal?: Goal }) {
 
           <div className="space-y-1.5">
             <Label>Tipo</Label>
-            <Select items={GOAL_TYPE_LABELS} value={type} onValueChange={(v) => v && setType(v as GoalType)}>
+            <Select items={GOAL_TYPE_LABELS} name="type" value={type} onValueChange={(v) => v && setType(v as GoalType)}>
               <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(Object.keys(GOAL_TYPE_LABELS) as GoalType[]).map((t) => (
