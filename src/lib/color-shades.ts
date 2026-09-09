@@ -66,8 +66,10 @@ export function deriveShades(baseHex: string, count: number): string[] {
   if (count === 1) return [baseHex];
 
   const { h, s } = hexToHsl(baseHex);
-  const minL = 30;
-  const maxL = 72;
+  // Faixa calibrada para nunca passar do tom mais escuro nem do mais claro da paleta de referência,
+  // mesmo com muitas subcategorias — os passos ficam mais finos, mas os extremos não mudam.
+  const minL = 35;
+  const maxL = 82;
   const step = (maxL - minL) / (count - 1);
 
   return Array.from({ length: count }, (_, i) => hslToHex({ h, s, l: minL + step * i }));

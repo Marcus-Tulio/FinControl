@@ -126,7 +126,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Pets",
     kind: "EXPENSE",
     icon: "paw-print",
-    color: "#84cc16",
+    color: "#737373",
     subcategories: [
       { name: "Ração", icon: "bone" },
       { name: "Veterinário", icon: "stethoscope" },
