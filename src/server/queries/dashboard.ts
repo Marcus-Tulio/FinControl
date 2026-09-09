@@ -76,20 +76,39 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
 
   const categories = await prisma.category.findMany({
     where: { id: { in: grouped.map((g) => g.categoryId!).filter(Boolean) } },
+    include: { parent: true },
   });
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
 
-  return grouped
-    .map((g, i) => {
-      const category = categoryMap.get(g.categoryId!);
-      return {
-        categoryId: g.categoryId,
-        name: category?.name ?? "Outros",
-        color: category?.color ?? CHART_COLORS[i % CHART_COLORS.length],
-        value: toNumber(g._sum.amount),
-      };
+  const slices = grouped.map((g, i) => {
+    const category = categoryMap.get(g.categoryId!);
+    const family = category?.parent ?? category;
+    return {
+      categoryId: g.categoryId,
+      name: category?.name ?? "Outros",
+      color: category?.color ?? CHART_COLORS[i % CHART_COLORS.length],
+      value: toNumber(g._sum.amount),
+      familyId: family?.id ?? g.categoryId!,
+      familyName: family?.name ?? category?.name ?? "Outros",
+    };
+  });
+
+  // Agrupa fatias pela categoria-mãe (família) para que subcategorias da mesma categoria fiquem sempre adjacentes no gráfico.
+  const familyTotals = new Map<string, number>();
+  for (const s of slices) {
+    familyTotals.set(s.familyId, (familyTotals.get(s.familyId) ?? 0) + s.value);
+  }
+
+  return slices
+    .sort((a, b) => {
+      if (a.familyId !== b.familyId) {
+        const familyDiff = (familyTotals.get(b.familyId) ?? 0) - (familyTotals.get(a.familyId) ?? 0);
+        if (familyDiff !== 0) return familyDiff;
+        return a.familyName.localeCompare(b.familyName, "pt-BR");
+      }
+      return b.value - a.value;
     })
-    .sort((a, b) => b.value - a.value);
+    .map(({ categoryId, name, color, value }) => ({ categoryId, name, color, value }));
 }
 
 export async function getRecentTransactions(userId: string, limit = 6) {

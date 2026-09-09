@@ -161,7 +161,7 @@ export function TransactionFormDialog({
             <div className="grid grid-cols-2 gap-3">
               <div className={`space-y-2 ${!(kind === "EXPENSE" && !isRecurring) ? "col-span-2" : ""}`}>
                 <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-                  <Label htmlFor="recurring" className="text-sm font-normal">Repetir automaticamente</Label>
+                  <Label htmlFor="recurring" className="text-sm font-normal">Repetir</Label>
                   <Switch id="recurring" name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" uncheckedValue="false" />
                 </div>
                 {isRecurring && (

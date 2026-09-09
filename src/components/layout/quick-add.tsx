@@ -101,7 +101,7 @@ function IncomeExpenseForm({
       <div className="grid grid-cols-2 gap-3">
         <div className={`space-y-2 ${!showInstallmentsPair ? "col-span-2" : ""}`}>
           <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-            <Label htmlFor={`recurring-${kind}`} className="text-sm font-normal">Repetir automaticamente</Label>
+            <Label htmlFor={`recurring-${kind}`} className="text-sm font-normal">Repetir</Label>
             <Switch id={`recurring-${kind}`} name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" uncheckedValue="false" />
           </div>
           {isRecurring && (
@@ -158,7 +158,7 @@ function TransferForm({ accounts, onDone }: { accounts: Account[]; onDone: () =>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label>De</Label>
-          <Select name="fromAccountId" required>
+          <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="fromAccountId" required>
             <SelectTrigger className="w-full"><SelectValue placeholder="Origem" /></SelectTrigger>
             <SelectContent>
               {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
@@ -167,7 +167,7 @@ function TransferForm({ accounts, onDone }: { accounts: Account[]; onDone: () =>
         </div>
         <div className="space-y-1.5">
           <Label>Para</Label>
-          <Select name="toAccountId" required>
+          <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="toAccountId" required>
             <SelectTrigger className="w-full"><SelectValue placeholder="Destino" /></SelectTrigger>
             <SelectContent>
               {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
