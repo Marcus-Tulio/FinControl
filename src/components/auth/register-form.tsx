@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -20,6 +20,11 @@ export function RegisterForm() {
   // React 19 reseta os campos do form automaticamente após a action ter sucesso, então as
   // credenciais precisam ser guardadas aqui antes disso, para o auto-login funcionar depois.
   const credentialsRef = useRef<{ email: string; password: string } | null>(null);
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+  const canSubmit = password.length >= 8 && confirmPassword.length >= 8 && !passwordsMismatch;
 
   function handleSubmit(formData: FormData) {
     credentialsRef.current = {
@@ -63,13 +68,31 @@ export function RegisterForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
-            <PasswordInput id="password" name="password" required minLength={8} autoComplete="new-password" />
+            <PasswordInput
+              id="password"
+              name="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar senha</Label>
-            <PasswordInput id="confirmPassword" name="confirmPassword" required minLength={8} autoComplete="new-password" />
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              aria-invalid={passwordsMismatch}
+            />
+            {passwordsMismatch && <p className="text-xs text-destructive">As senhas não coincidem</p>}
           </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !canSubmit}>
             {isPending ? "Criando conta..." : "Criar conta"}
           </Button>
         </form>

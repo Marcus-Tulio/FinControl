@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -16,6 +16,10 @@ const emptyState: ResetPasswordState = {};
 export function ResetPasswordForm({ email, token }: { email: string; token: string }) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(resetPassword, emptyState);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const passwordsMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
+  const canSubmit = newPassword.length >= 8 && confirmPassword.length >= 8 && !passwordsMismatch;
 
   useEffect(() => {
     if (state.success) {
@@ -57,13 +61,31 @@ export function ResetPasswordForm({ email, token }: { email: string; token: stri
           <input type="hidden" name="token" value={token} />
           <div className="space-y-2">
             <Label htmlFor="newPassword">Nova senha</Label>
-            <PasswordInput id="newPassword" name="newPassword" required minLength={8} autoComplete="new-password" />
+            <PasswordInput
+              id="newPassword"
+              name="newPassword"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar nova senha</Label>
-            <PasswordInput id="confirmPassword" name="confirmPassword" required minLength={8} autoComplete="new-password" />
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              aria-invalid={passwordsMismatch}
+            />
+            {passwordsMismatch && <p className="text-xs text-destructive">As senhas não coincidem</p>}
           </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !canSubmit}>
             {isPending ? "Salvando..." : "Redefinir senha"}
           </Button>
         </form>
