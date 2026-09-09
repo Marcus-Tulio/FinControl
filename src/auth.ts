@@ -78,8 +78,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
       }
       if (user || trigger === "update") {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { pinHash: true } });
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { pinHash: true, name: true } });
         token.hasPin = Boolean(dbUser?.pinHash);
+        if (trigger === "update" && dbUser) token.name = dbUser.name;
       }
       return token;
     },

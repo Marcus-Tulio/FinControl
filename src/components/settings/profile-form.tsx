@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +16,14 @@ export function ProfileForm({ name, email }: { name: string | null; email: strin
   // original apos a action terminar (mesmo com sucesso), o que faria o nome parecer que voltou
   // ao valor antigo mesmo tendo salvo corretamente.
   const [name_, setName] = useState(name ?? "");
+  const { update } = useSession();
 
   useEffect(() => {
-    if (state.success) toast.success("Perfil atualizado");
+    if (state.success) {
+      toast.success("Perfil atualizado");
+      // update() sem argumentos só refaz um GET; precisa de um payload para disparar trigger "update" no callback JWT.
+      update({});
+    }
   }, [state.success]);
 
   return (
