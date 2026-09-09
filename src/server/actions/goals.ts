@@ -10,7 +10,7 @@ export type GoalFormState = { error?: string; success?: boolean };
 
 const goalSchema = z.object({
   name: z.string().min(1, "Informe um nome"),
-  type: z.enum(["EMERGENCY_FUND", "TRAVEL", "CAR", "HOUSE", "INVESTMENT", "DEBT_PAYOFF", "CUSTOM"]),
+  type: z.enum(["EMERGENCY_FUND", "TRAVEL", "CAR", "HOUSE", "INVESTMENT", "DEBT_PAYOFF", "EDUCATION", "SHOPPING", "PERSONAL_EVENT", "CUSTOM"]),
   icon: z.string().default("target"),
   color: z.string().default("#6366f1"),
   targetAmount: z.coerce.number().positive("Informe um valor válido"),

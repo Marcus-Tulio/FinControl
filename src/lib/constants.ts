@@ -26,7 +26,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Compras",
     kind: "EXPENSE",
     icon: "shopping-bag",
-    color: "#f59e0b",
+    color: "#eab308",
     subcategories: [
       { name: "Roupas", icon: "shirt" },
       { name: "Calçados", icon: "footprints" },
@@ -43,7 +43,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Cuidados pessoais",
     kind: "EXPENSE",
     icon: "sparkles",
-    color: "#ec4899",
+    color: "#14b8a6",
     subcategories: [
       { name: "Cabeleireiro/Barbearia", icon: "scissors" },
       { name: "Manicure/Pedicure", icon: "hand" },
@@ -74,7 +74,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Entretenimento",
     kind: "EXPENSE",
     icon: "clapperboard",
-    color: "#a855f7",
+    color: "#d946ef",
     subcategories: [
       { name: "Cinema", icon: "clapperboard" },
       { name: "Streaming", icon: "tv" },
@@ -94,7 +94,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Finanças",
     kind: "EXPENSE",
     icon: "landmark",
-    color: "#64748b",
+    color: "#6366f1",
     subcategories: [
       { name: "Cartão de crédito", icon: "credit-card" },
       { name: "Tarifas bancárias", icon: "landmark" },
@@ -141,7 +141,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Saúde",
     kind: "EXPENSE",
     icon: "heart-pulse",
-    color: "#14b8a6",
+    color: "#22c55e",
     subcategories: [
       { name: "Plano de saúde", icon: "shield" },
       { name: "Consulta médica", icon: "stethoscope" },
@@ -214,11 +214,14 @@ export const INVESTMENT_TYPE_LABELS: Record<InvestmentType, string> = {
 export const GOAL_TYPE_LABELS: Record<GoalType, string> = {
   EMERGENCY_FUND: "Reserva de emergência",
   TRAVEL: "Viagem",
-  CAR: "Carro",
-  HOUSE: "Casa",
-  INVESTMENT: "Investimento",
-  DEBT_PAYOFF: "Quitar dívida",
-  CUSTOM: "Objetivo personalizado",
+  HOUSE: "Casa / Imóvel",
+  CAR: "Carro / Veículo",
+  DEBT_PAYOFF: "Quitar dívidas",
+  INVESTMENT: "Investimentos",
+  EDUCATION: "Educação",
+  SHOPPING: "Compras",
+  PERSONAL_EVENT: "Eventos / Projetos pessoais",
+  CUSTOM: "Outras",
 };
 
 export const CHART_COLORS = [

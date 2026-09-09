@@ -14,8 +14,9 @@ import { GOAL_TYPE_LABELS } from "@/lib/constants";
 import type { GoalType } from "@prisma/client";
 
 const ICON_BY_TYPE: Record<GoalType, string> = {
-  EMERGENCY_FUND: "shield", TRAVEL: "plane", CAR: "car", HOUSE: "home",
-  INVESTMENT: "line-chart", DEBT_PAYOFF: "landmark", CUSTOM: "target",
+  EMERGENCY_FUND: "shield", TRAVEL: "plane", HOUSE: "home", CAR: "car",
+  DEBT_PAYOFF: "landmark", INVESTMENT: "line-chart", EDUCATION: "graduation-cap",
+  SHOPPING: "shopping-bag", PERSONAL_EVENT: "party-popper", CUSTOM: "target",
 };
 const COLOR_OPTIONS = ["#2e9484", "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"];
 

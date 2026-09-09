@@ -7,6 +7,7 @@ import { percentChange } from "@/lib/finance";
 import { getAccountBalances } from "./accounts";
 import { getPortfolioSummary } from "./investments";
 import { CHART_COLORS } from "@/lib/constants";
+import { deriveShades } from "@/lib/color-shades";
 
 export async function getNetWorthSeries(userId: string, months = 12) {
   const [accounts, transactions] = await Promise.all([
@@ -83,13 +84,15 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
   const slices = grouped.map((g, i) => {
     const category = categoryMap.get(g.categoryId!);
     const family = category?.parent ?? category;
+    const familyColor = family?.color ?? category?.color ?? CHART_COLORS[i % CHART_COLORS.length];
     return {
       categoryId: g.categoryId,
       name: category?.name ?? "Outros",
-      color: category?.color ?? CHART_COLORS[i % CHART_COLORS.length],
+      color: category?.color ?? familyColor,
       value: toNumber(g._sum.amount),
       familyId: family?.id ?? g.categoryId!,
       familyName: family?.name ?? category?.name ?? "Outros",
+      familyColor,
     };
   });
 
@@ -99,16 +102,26 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
     familyTotals.set(s.familyId, (familyTotals.get(s.familyId) ?? 0) + s.value);
   }
 
-  return slices
-    .sort((a, b) => {
-      if (a.familyId !== b.familyId) {
-        const familyDiff = (familyTotals.get(b.familyId) ?? 0) - (familyTotals.get(a.familyId) ?? 0);
-        if (familyDiff !== 0) return familyDiff;
-        return a.familyName.localeCompare(b.familyName, "pt-BR");
-      }
-      return b.value - a.value;
-    })
-    .map(({ categoryId, name, color, value }) => ({ categoryId, name, color, value }));
+  const sorted = slices.sort((a, b) => {
+    if (a.familyId !== b.familyId) {
+      const familyDiff = (familyTotals.get(b.familyId) ?? 0) - (familyTotals.get(a.familyId) ?? 0);
+      if (familyDiff !== 0) return familyDiff;
+      return a.familyName.localeCompare(b.familyName, "pt-BR");
+    }
+    return b.value - a.value;
+  });
+
+  // Dentro de cada família (já ordenada por valor decrescente), quanto maior o gasto mais escura a tonalidade da cor-base da categoria-mãe.
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i + 1;
+    while (j < sorted.length && sorted[j].familyId === sorted[i].familyId) j++;
+    const shades = deriveShades(sorted[i].familyColor, j - i);
+    for (let k = i; k < j; k++) sorted[k].color = shades[k - i];
+    i = j;
+  }
+
+  return sorted.map(({ categoryId, name, color, value }) => ({ categoryId, name, color, value }));
 }
 
 export async function getRecentTransactions(userId: string, limit = 6) {
