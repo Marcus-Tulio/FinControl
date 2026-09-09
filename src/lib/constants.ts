@@ -13,7 +13,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Alimentação",
     kind: "EXPENSE",
     icon: "utensils",
-    color: "#ef4444",
+    color: "#22c55e",
     subcategories: [
       { name: "Mercado", icon: "shopping-cart" },
       { name: "Restaurante", icon: "utensils" },
@@ -141,7 +141,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Saúde",
     kind: "EXPENSE",
     icon: "heart-pulse",
-    color: "#22c55e",
+    color: "#ef4444",
     subcategories: [
       { name: "Plano de saúde", icon: "shield" },
       { name: "Consulta médica", icon: "stethoscope" },
