@@ -94,7 +94,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Finanças",
     kind: "EXPENSE",
     icon: "landmark",
-    color: "#6366f1",
+    color: "#f97316",
     subcategories: [
       { name: "Cartão de crédito", icon: "credit-card" },
       { name: "Tarifas bancárias", icon: "landmark" },
@@ -109,7 +109,7 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
     name: "Moradia",
     kind: "EXPENSE",
     icon: "home",
-    color: "#f97316",
+    color: "#6366f1",
     subcategories: [
       { name: "Aluguel", icon: "key" },
       { name: "Condomínio", icon: "building" },
