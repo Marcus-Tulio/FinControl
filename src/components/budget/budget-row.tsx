@@ -16,13 +16,15 @@ export function BudgetRow({
   action,
   compact = false,
 }: {
-  category: { name: string; color: string; icon: string };
+  category: { name: string; color: string; icon: string; parent?: { name: string } | null };
   limitAmount: Numberish;
   spent: number;
   action?: React.ReactNode;
   compact?: boolean;
 }) {
   const status = budgetStatus(limitAmount, spent);
+  // Orçamento específico de subcategoria: mostra "Categoria · Subcategoria" para deixar claro que está dentro do geral da categoria.
+  const label = category.parent ? `${category.parent.name} · ${category.name}` : category.name;
 
   return (
     <div className={compact ? "" : "rounded-xl border border-border p-4"}>
@@ -34,7 +36,7 @@ export function BudgetRow({
           <DynamicIcon name={category.icon} className="h-4.5 w-4.5" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">{category.name}</p>
+          <p className="text-sm font-medium">{label}</p>
           <p className="text-xs text-muted-foreground">
             {formatCurrency(status.spent)} de {formatCurrency(status.limit)} · disponível {formatCurrency(status.available)}
           </p>

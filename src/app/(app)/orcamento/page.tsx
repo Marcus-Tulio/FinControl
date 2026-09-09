@@ -1,11 +1,20 @@
 import { requireUserId } from "@/server/session";
-import { getBudgetsForMonth, getCategoriesWithoutBudget } from "@/server/queries/budgets";
+import { getBudgetsForMonth } from "@/server/queries/budgets";
+import { listTopLevelCategories } from "@/server/queries/categories";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { BudgetFormDialog } from "@/components/budget/budget-form-dialog";
 import { BudgetRow } from "@/components/budget/budget-row";
 import { formatCurrency, formatMonthYear } from "@/lib/format";
+import type { CategoryTree } from "@/components/shared/category-picker";
+
+/** Remove da árvore as categorias/subcategorias que já têm orçamento neste mês, mantendo a categoria-mãe se ainda houver subcategoria livre. */
+function categoriesAvailableForNewBudget(tree: CategoryTree[], takenIds: Set<string>): CategoryTree[] {
+  return tree
+    .map((c) => ({ ...c, subcategories: c.subcategories.filter((s) => !takenIds.has(s.id)) }))
+    .filter((c) => !takenIds.has(c.id) || c.subcategories.length > 0);
+}
 
 export default async function OrcamentoPage() {
   const userId = await requireUserId();
@@ -13,10 +22,13 @@ export default async function OrcamentoPage() {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  const [budgets, categoriesWithoutBudget] = await Promise.all([
+  const [budgets, categoriesTree] = await Promise.all([
     getBudgetsForMonth(userId, month, year),
-    getCategoriesWithoutBudget(userId, month, year),
+    listTopLevelCategories(userId, "EXPENSE"),
   ]);
+
+  const takenIds = new Set(budgets.map((b) => b.categoryId));
+  const availableCategories = categoriesAvailableForNewBudget(categoriesTree, takenIds);
 
   const totalLimit = budgets.reduce((s, b) => s + Number(b.limitAmount), 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
@@ -26,7 +38,7 @@ export default async function OrcamentoPage() {
       <PageHeader
         title="Orçamento"
         description={formatMonthYear(now)}
-        actions={<BudgetFormDialog categories={categoriesWithoutBudget} month={month} year={year} />}
+        actions={<BudgetFormDialog categories={availableCategories} month={month} year={year} />}
       />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -51,7 +63,7 @@ export default async function OrcamentoPage() {
               spent={budget.spent}
               action={
                 <BudgetFormDialog
-                  categories={[{ id: budget.categoryId, name: budget.category.name }]}
+                  categories={categoriesTree}
                   month={month}
                   year={year}
                   existing={{ categoryId: budget.categoryId, limitAmount: Number(budget.limitAmount) }}

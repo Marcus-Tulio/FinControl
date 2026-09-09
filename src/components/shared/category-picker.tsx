@@ -21,11 +21,15 @@ export function CategoryPicker({
   defaultCategoryId,
   name = "categoryId",
   allowSubcategory = true,
+  subcategoryPlaceholder = "Selecione",
+  disabled = false,
 }: {
   categories: CategoryTree[];
   defaultCategoryId?: string | null;
   name?: string;
   allowSubcategory?: boolean;
+  subcategoryPlaceholder?: string;
+  disabled?: boolean;
 }) {
   const initial = resolveInitial(categories, defaultCategoryId);
   const [topId, setTopId] = useState(initial.topId);
@@ -42,6 +46,7 @@ export function CategoryPicker({
           items={Object.fromEntries(categories.map((c) => [c.id, c.name]))}
           value={topId}
           onValueChange={(v) => setTopId(v ?? "")}
+          disabled={disabled}
         >
           <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
           <SelectContent>
@@ -66,6 +71,7 @@ export function CategoryPicker({
             setTopId(v ?? "");
             setSubId("");
           }}
+          disabled={disabled}
         >
           <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
           <SelectContent>
@@ -76,15 +82,15 @@ export function CategoryPicker({
         </Select>
       </div>
       <div className="space-y-1.5">
-        <Label>Subcategoria</Label>
+        <Label>Subcategoria (opcional)</Label>
         <Select
           key={topId}
           items={Object.fromEntries(subcategories.map((s) => [s.id, s.name]))}
           value={subId}
           onValueChange={(v) => setSubId(v ?? "")}
-          disabled={subcategories.length === 0}
+          disabled={disabled || subcategories.length === 0}
         >
-          <SelectTrigger className="w-full"><SelectValue placeholder={subcategories.length ? "Selecione" : "—"} /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue placeholder={subcategories.length ? subcategoryPlaceholder : "—"} /></SelectTrigger>
           <SelectContent>
             {subcategories.map((s) => (
               <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>

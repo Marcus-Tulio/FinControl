@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
 import { upsertBudget, type BudgetFormState } from "@/server/actions/budgets";
 
-type Category = { id: string; name: string };
 const emptyState: BudgetFormState = {};
 
 export function BudgetFormDialog({
@@ -19,7 +18,7 @@ export function BudgetFormDialog({
   year,
   existing,
 }: {
-  categories: Category[];
+  categories: CategoryTree[];
   month: number;
   year: number;
   existing?: { categoryId: string; limitAmount: number };
@@ -53,15 +52,15 @@ export function BudgetFormDialog({
           <input type="hidden" name="month" value={month} />
           <input type="hidden" name="year" value={year} />
 
-          <div className="space-y-1.5">
-            <Label>Categoria</Label>
-            <Select items={Object.fromEntries(categories.map((c) => [c.id, c.name]))} name="categoryId" defaultValue={existing?.categoryId} disabled={Boolean(existing)}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
+          <CategoryPicker
+            categories={categories}
+            defaultCategoryId={existing?.categoryId}
+            disabled={Boolean(existing)}
+            subcategoryPlaceholder="Todas (geral)"
+          />
+          <p className="text-xs text-muted-foreground">
+            Sem subcategoria, o orçamento é geral para toda a categoria. Escolhendo uma subcategoria, o limite vale só para ela.
+          </p>
 
           <div className="space-y-1.5">
             <Label>Limite mensal</Label>
