@@ -11,11 +11,14 @@ import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
 
 export type RegisterFormState = { error?: string; success?: boolean };
 
-const registerSchema = z.object({
-  name: z.string().min(1, "Informe seu nome"),
-  email: z.string().email("E-mail inválido"),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Informe seu nome"),
+    email: z.string().email("E-mail inválido"),
+    password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+    confirmPassword: z.string().min(1, "Confirme a senha"),
+  })
+  .refine((d) => d.password === d.confirmPassword, { message: "As senhas não coincidem", path: ["confirmPassword"] });
 
 export async function registerUser(_prev: RegisterFormState, formData: FormData): Promise<RegisterFormState> {
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));

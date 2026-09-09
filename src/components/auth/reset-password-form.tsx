@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -57,11 +57,11 @@ export function ResetPasswordForm({ email, token }: { email: string; token: stri
           <input type="hidden" name="token" value={token} />
           <div className="space-y-2">
             <Label htmlFor="newPassword">Nova senha</Label>
-            <Input id="newPassword" name="newPassword" type="password" required minLength={8} autoComplete="new-password" />
+            <PasswordInput id="newPassword" name="newPassword" required minLength={8} autoComplete="new-password" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar nova senha</Label>
-            <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={8} autoComplete="new-password" />
+            <PasswordInput id="confirmPassword" name="confirmPassword" required minLength={8} autoComplete="new-password" />
           </div>
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? "Salvando..." : "Redefinir senha"}

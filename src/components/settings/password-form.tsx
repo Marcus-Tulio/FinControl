@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { changePassword, type SettingsFormState } from "@/server/actions/auth";
 
@@ -24,15 +24,15 @@ export function PasswordForm() {
     <form ref={formRef} action={formAction} className="space-y-3">
       <div className="space-y-1.5">
         <Label>Senha atual</Label>
-        <Input name="currentPassword" type="password" required autoComplete="current-password" />
+        <PasswordInput name="currentPassword" required autoComplete="current-password" />
       </div>
       <div className="space-y-1.5">
         <Label>Nova senha</Label>
-        <Input name="newPassword" type="password" required minLength={8} autoComplete="new-password" />
+        <PasswordInput name="newPassword" required minLength={8} autoComplete="new-password" />
       </div>
       <div className="space-y-1.5">
         <Label>Confirmar nova senha</Label>
-        <Input name="confirmPassword" type="password" required minLength={8} autoComplete="new-password" />
+        <PasswordInput name="confirmPassword" required minLength={8} autoComplete="new-password" />
       </div>
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
       <Button type="submit" disabled={isPending}>{isPending ? "Alterando..." : "Alterar senha"}</Button>
