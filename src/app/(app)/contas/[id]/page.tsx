@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { requireUserId } from "@/server/session";
 import { getAccountWithHistory, listAccountsWithBalances } from "@/server/queries/accounts";
-import { listCategories } from "@/server/queries/categories";
+import { listTopLevelCategories } from "@/server/queries/categories";
 import { PageHeader } from "@/components/shared/page-header";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { DynamicIcon } from "@/components/dynamic-icon";
@@ -18,14 +18,19 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
   const [data, accounts, categories] = await Promise.all([
     getAccountWithHistory(userId, id),
     listAccountsWithBalances(userId),
-    listCategories(userId),
+    listTopLevelCategories(userId),
   ]);
 
   if (!data) notFound();
 
   const { account, balance, transactions } = data;
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name }));
-  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name, kind: c.kind }));
+  const categoryOptions = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    kind: c.kind,
+    subcategories: c.subcategories.map((s) => ({ id: s.id, name: s.name })),
+  }));
 
   return (
     <div>

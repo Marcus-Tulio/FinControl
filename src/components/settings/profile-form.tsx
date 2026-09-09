@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,10 @@ const emptyState: SettingsFormState = {};
 
 export function ProfileForm({ name, email }: { name: string | null; email: string | null }) {
   const [state, formAction, isPending] = useActionState(updateProfile, emptyState);
+  // Controlado propositalmente: o React 19 reseta campos nao controlados para o defaultValue
+  // original apos a action terminar (mesmo com sucesso), o que faria o nome parecer que voltou
+  // ao valor antigo mesmo tendo salvo corretamente.
+  const [name_, setName] = useState(name ?? "");
 
   useEffect(() => {
     if (state.success) toast.success("Perfil atualizado");
@@ -20,7 +24,7 @@ export function ProfileForm({ name, email }: { name: string | null; email: strin
     <form action={formAction} className="space-y-3">
       <div className="space-y-1.5">
         <Label>Nome</Label>
-        <Input name="name" defaultValue={name ?? ""} required />
+        <Input name="name" value={name_} onChange={(e) => setName(e.target.value)} required />
       </div>
       <div className="space-y-1.5">
         <Label>E-mail</Label>

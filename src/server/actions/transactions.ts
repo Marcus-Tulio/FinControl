@@ -9,6 +9,11 @@ import { generateOccurrences } from "@/lib/recurrence";
 
 export type TransactionFormState = { error?: string; success?: boolean };
 
+/** Switches enviam "true"/"false" (ou nada, se ausentes) — z.coerce.boolean() trataria "false" como truthy. */
+function booleanField(defaultValue: boolean) {
+  return z.preprocess((v) => (v === undefined ? defaultValue : v === "true"), z.boolean());
+}
+
 const baseSchema = z.object({
   kind: z.enum(["INCOME", "EXPENSE", "INVESTMENT", "ADJUSTMENT"]),
   financialAccountId: z.string().min(1, "Escolha uma conta"),
@@ -17,9 +22,9 @@ const baseSchema = z.object({
   notes: z.string().optional(),
   amount: z.coerce.number().positive("Informe um valor válido"),
   date: z.string().min(1, "Informe a data"),
-  isEssential: z.coerce.boolean().default(true),
-  isPaid: z.coerce.boolean().default(true),
-  isRecurring: z.coerce.boolean().default(false),
+  isEssential: booleanField(true),
+  isPaid: booleanField(true),
+  isRecurring: booleanField(false),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
   installments: z.coerce.number().int().min(1).max(360).default(1),
 });

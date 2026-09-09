@@ -9,12 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
 import { createTransaction, type TransactionFormState } from "@/server/actions/transactions";
 import { transferBetweenAccounts, type AccountFormState } from "@/server/actions/accounts";
 import { toast } from "sonner";
 
 type Account = { id: string; name: string };
-type Category = { id: string; name: string };
 
 const emptyTx: TransactionFormState = {};
 const emptyTransfer: AccountFormState = {};
@@ -31,11 +31,12 @@ function IncomeExpenseForm({
 }: {
   kind: "INCOME" | "EXPENSE" | "INVESTMENT";
   accounts: Account[];
-  categories: Category[];
+  categories: CategoryTree[];
   onDone: () => void;
 }) {
   const [state, formAction, isPending] = useActionState(createTransaction, emptyTx);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [hasInstallments, setHasInstallments] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const successLabel = kind === "INCOME" ? "Receita adicionada" : kind === "EXPENSE" ? "Despesa adicionada" : "Investimento registrado";
@@ -45,13 +46,17 @@ function IncomeExpenseForm({
     if (state.success) {
       toast.success(successLabel);
       formRef.current?.reset();
+      setHasInstallments(false);
       onDone();
     }
   }, [state.success]);
 
+  const showInstallmentsPair = kind === "EXPENSE" && !isRecurring;
+
   return (
     <form ref={formRef} action={formAction} className="space-y-3">
       <input type="hidden" name="kind" value={kind} />
+      <CategoryPicker categories={categories} allowSubcategory={kind === "EXPENSE"} />
       <div className="space-y-1.5">
         <Label>Descrição</Label>
         <Input name="description" required placeholder={descPlaceholder} />
@@ -66,67 +71,66 @@ function IncomeExpenseForm({
           <Input name="date" type="date" defaultValue={todayStr()} required />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label>Conta</Label>
-          <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
-            <SelectContent>
-              {accounts.map((a) => (
-                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>Categoria</Label>
-          <Select items={Object.fromEntries(categories.map((c) => [c.id, c.name]))} name="categoryId">
-            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
-            <SelectContent>
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-        <Label htmlFor={`paid-${kind}`} className="text-sm font-normal">
-          {kind === "INCOME" ? "Já recebido" : kind === "INVESTMENT" ? "Já aportado" : "Já pago"}
-        </Label>
-        <Switch id={`paid-${kind}`} name="isPaid" defaultChecked value="true" />
-      </div>
-
-      {kind === "EXPENSE" && (
-        <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-          <Label htmlFor="essential" className="text-sm font-normal">Despesa essencial</Label>
-          <Switch id="essential" name="isEssential" defaultChecked value="true" />
-        </div>
-      )}
-
-      <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-        <Label htmlFor={`recurring-${kind}`} className="text-sm font-normal">Repetir automaticamente</Label>
-        <Switch id={`recurring-${kind}`} name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" />
-      </div>
-      {isRecurring && (
-        <Select items={{ DAILY: "Diária", WEEKLY: "Semanal", MONTHLY: "Mensal", YEARLY: "Anual" }} name="frequency" defaultValue="MONTHLY">
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+      <div className="space-y-1.5">
+        <Label>Conta</Label>
+        <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required>
+          <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="DAILY">Diária</SelectItem>
-            <SelectItem value="WEEKLY">Semanal</SelectItem>
-            <SelectItem value="MONTHLY">Mensal</SelectItem>
-            <SelectItem value="YEARLY">Anual</SelectItem>
+            {accounts.map((a) => (
+              <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
-      )}
+      </div>
 
-      {kind === "EXPENSE" && !isRecurring && (
-        <div className="space-y-1.5">
-          <Label>Parcelas</Label>
-          <Input name="installments" type="number" min="1" max="360" defaultValue="1" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className={`flex items-center justify-between rounded-lg border px-3 py-2 ${kind !== "EXPENSE" ? "col-span-2" : ""}`}>
+          <Label htmlFor={`paid-${kind}`} className="text-sm font-normal">
+            {kind === "INCOME" ? "Já recebido" : kind === "INVESTMENT" ? "Já aportado" : "Já pago"}
+          </Label>
+          <Switch id={`paid-${kind}`} name="isPaid" defaultChecked value="true" uncheckedValue="false" />
         </div>
-      )}
+        {kind === "EXPENSE" && (
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <Label htmlFor="essential" className="text-sm font-normal">Despesa essencial</Label>
+            <Switch id="essential" name="isEssential" defaultChecked value="true" uncheckedValue="false" />
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className={`space-y-2 ${!showInstallmentsPair ? "col-span-2" : ""}`}>
+          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <Label htmlFor={`recurring-${kind}`} className="text-sm font-normal">Repetir automaticamente</Label>
+            <Switch id={`recurring-${kind}`} name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" uncheckedValue="false" />
+          </div>
+          {isRecurring && (
+            <Select items={{ DAILY: "Diária", WEEKLY: "Semanal", MONTHLY: "Mensal", YEARLY: "Anual" }} name="frequency" defaultValue="MONTHLY">
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DAILY">Diária</SelectItem>
+                <SelectItem value="WEEKLY">Semanal</SelectItem>
+                <SelectItem value="MONTHLY">Mensal</SelectItem>
+                <SelectItem value="YEARLY">Anual</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+        {showInstallmentsPair && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <Label htmlFor={`has-installments-${kind}`} className="text-sm font-normal">Compra parcelada</Label>
+              <Switch id={`has-installments-${kind}`} checked={hasInstallments} onCheckedChange={setHasInstallments} />
+            </div>
+            {hasInstallments && (
+              <div className="space-y-1.5">
+                <Label>Parcelas</Label>
+                <Input name="installments" type="number" min="2" max="360" defaultValue="2" required />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
@@ -224,9 +228,9 @@ export function QuickAdd({
   investmentCategories,
 }: {
   accounts: Account[];
-  incomeCategories: Category[];
-  expenseCategories: Category[];
-  investmentCategories: Category[];
+  incomeCategories: CategoryTree[];
+  expenseCategories: CategoryTree[];
+  investmentCategories: CategoryTree[];
 }) {
   const { open, setOpen } = useQuickAdd();
 

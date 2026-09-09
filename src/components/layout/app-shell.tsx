@@ -11,9 +11,9 @@ import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { NotificationBell } from "./notification-bell";
 import { QuickAdd, QuickAddProvider } from "./quick-add";
+import type { CategoryTree } from "@/components/shared/category-picker";
 
 type Account = { id: string; name: string };
-type Category = { id: string; name: string };
 type NotificationItem = {
   id: string;
   type: string;
@@ -35,9 +35,9 @@ export function AppShell({
   children: React.ReactNode;
   user: { name?: string | null; email?: string | null; image?: string | null };
   accounts: Account[];
-  incomeCategories: Category[];
-  expenseCategories: Category[];
-  investmentCategories: Category[];
+  incomeCategories: CategoryTree[];
+  expenseCategories: CategoryTree[];
+  investmentCategories: CategoryTree[];
   notifications: NotificationItem[];
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);

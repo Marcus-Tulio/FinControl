@@ -1,7 +1,7 @@
 import { requireUserId } from "@/server/session";
 import { listTransactions } from "@/server/queries/transactions";
 import { listAccountsWithBalances } from "@/server/queries/accounts";
-import { listCategories } from "@/server/queries/categories";
+import { listTopLevelCategories } from "@/server/queries/categories";
 import { PageHeader } from "@/components/shared/page-header";
 import { TransactionsFilterBar } from "@/components/transactions/transactions-filter-bar";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -26,11 +26,17 @@ export default async function TransactionsPage({
       kind: sp.kind as TransactionKind | undefined,
     }),
     listAccountsWithBalances(userId),
-    listCategories(userId),
+    listTopLevelCategories(userId),
   ]);
 
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name }));
-  const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name, kind: c.kind }));
+  const categoryTree = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    kind: c.kind,
+    subcategories: c.subcategories.map((s) => ({ id: s.id, name: s.name })),
+  }));
+  const categoryFlat = categoryTree.flatMap((c) => [{ id: c.id, name: c.name }, ...c.subcategories]);
 
   return (
     <div>
@@ -40,12 +46,12 @@ export default async function TransactionsPage({
         actions={
           <>
             <ImportCsvDialog accounts={accountOptions} />
-            <TransactionFormDialog accounts={accountOptions} categories={categoryOptions} />
+            <TransactionFormDialog accounts={accountOptions} categories={categoryTree} />
           </>
         }
       />
-      <TransactionsFilterBar accounts={accountOptions} categories={categoryOptions.map((c) => ({ id: c.id, name: c.name }))} />
-      <TransactionsTable transactions={serializeDecimals(transactions)} accounts={accountOptions} categories={categoryOptions} />
+      <TransactionsFilterBar accounts={accountOptions} categories={categoryFlat} />
+      <TransactionsTable transactions={serializeDecimals(transactions)} accounts={accountOptions} categories={categoryTree} />
     </div>
   );
 }

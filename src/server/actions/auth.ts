@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
 import { DEFAULT_CATEGORIES } from "@/lib/constants";
 import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
+import { deriveShades } from "@/lib/color-shades";
 
 export type RegisterFormState = { error?: string; success?: boolean };
 
@@ -47,28 +48,39 @@ export async function registerUser(_prev: RegisterFormState, formData: FormData)
     if (!c.subcategories?.length) continue;
     const parent = parents.find((p) => p.name === c.name);
     if (!parent) continue;
+    const shades = deriveShades(c.color, c.subcategories.length);
     await prisma.category.createMany({
-      data: c.subcategories.map((sub) => ({
+      data: c.subcategories.map((sub, i) => ({
         userId: user.id,
         name: sub.name,
         kind: c.kind,
         icon: sub.icon,
-        color: c.color,
+        color: shades[i],
         parentId: parent.id,
         isDefault: true,
       })),
     });
   }
 
-  await prisma.financialAccount.create({
-    data: {
-      userId: user.id,
-      name: "Carteira",
-      type: "CASH",
-      color: "#6366f1",
-      icon: "wallet",
-      initialBalance: 0,
-    },
+  await prisma.financialAccount.createMany({
+    data: [
+      {
+        userId: user.id,
+        name: "Carteira",
+        type: "CASH",
+        color: "#6366f1",
+        icon: "wallet",
+        initialBalance: 0,
+      },
+      {
+        userId: user.id,
+        name: "Conta bancária",
+        type: "CHECKING",
+        color: "#2a78d6",
+        icon: "landmark",
+        initialBalance: 0,
+      },
+    ],
   });
 
   return { success: true };

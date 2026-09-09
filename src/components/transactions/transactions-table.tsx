@@ -15,6 +15,7 @@ import {
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TransactionFormDialog } from "./transaction-form-dialog";
+import type { CategoryTree } from "@/components/shared/category-picker";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { deleteTransaction, duplicateTransaction, markTransactionPaid } from "@/server/actions/transactions";
 import type { TransactionKind } from "@prisma/client";
@@ -36,7 +37,7 @@ type Row = {
 };
 
 type Account = { id: string; name: string };
-type Category = { id: string; name: string; kind: TransactionKind };
+type Category = CategoryTree & { kind: TransactionKind };
 
 const KIND_STYLES: Record<string, { label: string; className: string }> = {
   INCOME: { label: "Receita", className: "text-[var(--status-good)]" },

@@ -12,7 +12,7 @@ function prepareData(data: CategorySlice[], maxSlices = 7) {
   const top = data.slice(0, maxSlices);
   const rest = data.slice(maxSlices);
   const othersTotal = rest.reduce((s, d) => s + d.value, 0);
-  return [...top, { name: "Outros", value: othersTotal }];
+  return [...top, { name: "Outros", value: othersTotal, color: "var(--chart-muted)" }];
 }
 
 export function CategoryDonutChart({ data }: { data: CategorySlice[] }) {
@@ -39,7 +39,7 @@ export function CategoryDonutChart({ data }: { data: CategorySlice[] }) {
               stroke="var(--chart-surface)"
             >
               {prepared.map((entry, i) => (
-                <Cell key={entry.name} fill={SERIES_COLORS[i % SERIES_COLORS.length]} />
+                <Cell key={entry.name} fill={entry.color ?? SERIES_COLORS[i % SERIES_COLORS.length]} />
               ))}
             </Pie>
             <Tooltip content={<ChartTooltip />} />
@@ -54,7 +54,7 @@ export function CategoryDonutChart({ data }: { data: CategorySlice[] }) {
         {prepared.map((entry, i) => (
           <div key={entry.name} className="flex items-center justify-between gap-2 text-sm">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length] }} />
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color ?? SERIES_COLORS[i % SERIES_COLORS.length] }} />
               <span className="truncate text-foreground/80" title={entry.name}>{entry.name}</span>
             </div>
             <div className="flex shrink-0 items-center gap-2 tabular-nums">

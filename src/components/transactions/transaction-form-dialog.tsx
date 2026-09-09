@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CategoryPicker, type CategoryTree } from "@/components/shared/category-picker";
 import { createTransaction, updateTransaction, type TransactionFormState } from "@/server/actions/transactions";
 import type { TransactionKind } from "@prisma/client";
 
 type Account = { id: string; name: string };
-type Category = { id: string; name: string; kind: TransactionKind };
+type Category = CategoryTree & { kind: TransactionKind };
 
 type ExistingTransaction = {
   id: string;
@@ -69,6 +70,7 @@ export function TransactionFormDialog({
   const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setUncontrolledOpen;
   const [kind, setKind] = useState<TransactionKind>(transaction?.kind ?? defaultKind);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [hasInstallments, setHasInstallments] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export function TransactionFormDialog({
       toast.success(isEdit ? "Transação atualizada" : "Transação criada");
       setOpen(false);
       formRef.current?.reset();
+      setHasInstallments(false);
     }
   }, [state.success]);
 
@@ -111,6 +114,8 @@ export function TransactionFormDialog({
             <input type="hidden" name="kind" value={kind} />
           </div>
 
+          <CategoryPicker key={kind} categories={filteredCategories} defaultCategoryId={transaction?.categoryId} allowSubcategory={kind === "EXPENSE"} />
+
           <div className="space-y-1.5">
             <Label>Descrição</Label>
             <Input name="description" required defaultValue={transaction?.description} />
@@ -127,65 +132,65 @@ export function TransactionFormDialog({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>Conta</Label>
+            <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required defaultValue={transaction?.financialAccountId}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Conta</Label>
-              <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required defaultValue={transaction?.financialAccountId}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent>
-                  {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <div className={`flex items-center justify-between rounded-lg border px-3 py-2 ${kind !== "EXPENSE" ? "col-span-2" : ""}`}>
+              <Label htmlFor="isPaid" className="text-sm font-normal">
+                {kind === "INCOME" ? "Já recebido" : "Já pago"}
+              </Label>
+              <Switch id="isPaid" name="isPaid" defaultChecked={transaction ? transaction.status === "PAID" : true} value="true" uncheckedValue="false" />
             </div>
-            <div className="space-y-1.5">
-              <Label>Categoria</Label>
-              <Select items={Object.fromEntries(filteredCategories.map((c) => [c.id, c.name]))} name="categoryId" defaultValue={transaction?.categoryId ?? undefined}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent>
-                  {filteredCategories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {kind === "EXPENSE" && (
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                <Label htmlFor="essential" className="text-sm font-normal">Despesa essencial</Label>
+                <Switch id="essential" name="isEssential" defaultChecked={transaction?.isEssential ?? true} value="true" uncheckedValue="false" />
+              </div>
+            )}
           </div>
-
-          <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-            <Label htmlFor="isPaid" className="text-sm font-normal">
-              {kind === "INCOME" ? "Já recebido" : "Já pago"}
-            </Label>
-            <Switch id="isPaid" name="isPaid" defaultChecked={transaction ? transaction.status === "PAID" : true} value="true" />
-          </div>
-
-          {kind === "EXPENSE" && (
-            <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-              <Label htmlFor="essential" className="text-sm font-normal">Despesa essencial</Label>
-              <Switch id="essential" name="isEssential" defaultChecked={transaction?.isEssential ?? true} value="true" />
-            </div>
-          )}
 
           {!isEdit && (
-            <>
-              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-                <Label htmlFor="recurring" className="text-sm font-normal">Repetir automaticamente</Label>
-                <Switch id="recurring" name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className={`space-y-2 ${!(kind === "EXPENSE" && !isRecurring) ? "col-span-2" : ""}`}>
+                <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                  <Label htmlFor="recurring" className="text-sm font-normal">Repetir automaticamente</Label>
+                  <Switch id="recurring" name="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} value="true" uncheckedValue="false" />
+                </div>
+                {isRecurring && (
+                  <Select items={FREQUENCY_LABELS} name="frequency" defaultValue="MONTHLY">
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DAILY">Diária</SelectItem>
+                      <SelectItem value="WEEKLY">Semanal</SelectItem>
+                      <SelectItem value="MONTHLY">Mensal</SelectItem>
+                      <SelectItem value="YEARLY">Anual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-              {isRecurring && (
-                <Select items={FREQUENCY_LABELS} name="frequency" defaultValue="MONTHLY">
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DAILY">Diária</SelectItem>
-                    <SelectItem value="WEEKLY">Semanal</SelectItem>
-                    <SelectItem value="MONTHLY">Mensal</SelectItem>
-                    <SelectItem value="YEARLY">Anual</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
               {kind === "EXPENSE" && !isRecurring && (
-                <div className="space-y-1.5">
-                  <Label>Parcelas</Label>
-                  <Input name="installments" type="number" min="1" max="360" defaultValue="1" />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                    <Label htmlFor="has-installments" className="text-sm font-normal">Compra parcelada</Label>
+                    <Switch id="has-installments" checked={hasInstallments} onCheckedChange={setHasInstallments} />
+                  </div>
+                  {hasInstallments && (
+                    <div className="space-y-1.5">
+                      <Label>Parcelas</Label>
+                      <Input name="installments" type="number" min="2" max="360" defaultValue="2" required />
+                    </div>
+                  )}
                 </div>
               )}
-            </>
+            </div>
           )}
 
           <div className="space-y-1.5">

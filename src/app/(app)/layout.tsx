@@ -17,17 +17,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     listNotifications(userId),
   ]);
 
-  const flatten = (cats: { id: string; name: string; subcategories: { id: string; name: string }[] }[]) =>
-    cats.flatMap((c) => [{ id: c.id, name: c.name }, ...c.subcategories.map((s) => ({ id: s.id, name: `${c.name} · ${s.name}` }))]);
+  const toTree = (cats: { id: string; name: string; subcategories: { id: string; name: string }[] }[]) =>
+    cats.map((c) => ({ id: c.id, name: c.name, subcategories: c.subcategories.map((s) => ({ id: s.id, name: s.name })) }));
 
   return (
     <SessionProvider>
       <AppShell
         user={{ name: user?.name, email: user?.email, image: user?.image }}
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
-        incomeCategories={flatten(incomeCategories)}
-        expenseCategories={flatten(expenseCategories)}
-        investmentCategories={flatten(investmentCategories)}
+        incomeCategories={toTree(incomeCategories)}
+        expenseCategories={toTree(expenseCategories)}
+        investmentCategories={toTree(investmentCategories)}
         notifications={notifications}
       >
         {children}
