@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
 import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
 import { seedDefaultData } from "@/server/seed-defaults";
+import { AVATAR_ICON_KEYS } from "@/lib/avatars";
 import type { ProfileType } from "@prisma/client";
 
 export type RegisterFormState = { error?: string; success?: boolean };
@@ -67,6 +68,16 @@ export async function updateProfile(_prev: SettingsFormState, formData: FormData
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
 
   await prisma.user.update({ where: { id: userId }, data: { name: parsed.data.name } });
+  revalidatePath("/configuracoes");
+  return { success: true };
+}
+
+/** avatarIcon nulo = volta a mostrar as iniciais do nome. */
+export async function updateAvatar(icon: string | null): Promise<SettingsFormState> {
+  const userId = await requireUserId();
+  if (icon !== null && !AVATAR_ICON_KEYS.includes(icon)) return { error: "Avatar inválido" };
+
+  await prisma.user.update({ where: { id: userId }, data: { avatarIcon: icon } });
   revalidatePath("/configuracoes");
   return { success: true };
 }

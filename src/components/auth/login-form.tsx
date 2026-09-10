@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getProfileTypesForEmail } from "@/server/actions/auth";
 
@@ -72,10 +72,6 @@ export function LoginForm({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Entrar</CardTitle>
-        <CardDescription>Acesse sua vida financeira em um só lugar.</CardDescription>
-      </CardHeader>
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
