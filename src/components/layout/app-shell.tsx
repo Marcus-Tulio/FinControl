@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { UserMenu } from "./user-menu";
 import { NotificationBell } from "./notification-bell";
 import { QuickAdd, QuickAddProvider } from "./quick-add";
 import type { CategoryTree } from "@/components/shared/category-picker";
+import { BUSINESS_THEME_CLASS } from "@/lib/business-theme";
 
 type Account = { id: string; name: string };
 type NotificationItem = {
@@ -31,6 +32,7 @@ export function AppShell({
   expenseCategories,
   investmentCategories,
   notifications,
+  isBusiness,
 }: {
   children: React.ReactNode;
   user: { name?: string | null; email?: string | null; image?: string | null };
@@ -39,6 +41,7 @@ export function AppShell({
   expenseCategories: CategoryTree[];
   investmentCategories: CategoryTree[];
   notifications: NotificationItem[];
+  isBusiness: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -50,19 +53,28 @@ export function AppShell({
     router.push(q ? `/transacoes?search=${encodeURIComponent(q)}` : "/transacoes");
   }
 
+  // Classe em document.documentElement (não num wrapper local) para alcançar também conteúdo
+  // portalizado para o body, como o Popover de notificações, o Dialog de transação e o Sheet mobile,
+  // e para que a variação clara/escura funcione pela cascata normal do CSS (ver .theme-business).
+  useLayoutEffect(() => {
+    if (!isBusiness) return;
+    document.documentElement.classList.add(BUSINESS_THEME_CLASS);
+    return () => document.documentElement.classList.remove(BUSINESS_THEME_CLASS);
+  }, [isBusiness]);
+
   return (
     <QuickAddProvider>
       <div className="flex min-h-screen w-full bg-background">
         <aside className="hidden w-64 shrink-0 md:block">
           <div className="fixed h-screen w-64">
-            <SidebarNav />
+            <SidebarNav isBusiness={isBusiness} />
           </div>
         </aside>
 
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent side="left" className="w-72 p-0">
             <SheetTitle className="sr-only">Menu</SheetTitle>
-            <SidebarNav onNavigate={() => setMobileOpen(false)} />
+            <SidebarNav onNavigate={() => setMobileOpen(false)} isBusiness={isBusiness} />
           </SheetContent>
         </Sheet>
 
@@ -92,7 +104,7 @@ export function AppShell({
           <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
 
           <footer className="border-t border-border px-4 py-4 text-center text-xs text-muted-foreground md:px-8">
-            FinControl · controle financeiro pessoal
+            FinControl · {isBusiness ? "Empresas" : "Individual"}
           </footer>
         </div>
 

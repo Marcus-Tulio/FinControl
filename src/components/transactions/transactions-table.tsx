@@ -30,6 +30,7 @@ type Row = {
   date: Date;
   dueDate: Date | null;
   isEssential: boolean;
+  expenseType?: "FIXED" | "VARIABLE" | "EXTRAORDINARY" | null;
   financialAccountId: string;
   categoryId: string | null;
   category: { name: string; color: string; icon: string } | null;
@@ -184,6 +185,7 @@ export function TransactionsTable({
             date: editingTx.date,
             status: editingTx.status,
             isEssential: editingTx.isEssential,
+            expenseType: editingTx.expenseType,
           }}
         />
       )}

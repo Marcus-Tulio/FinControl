@@ -29,7 +29,9 @@ export async function requestPasswordReset(_prev: RequestResetState, formData: F
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
 
   const email = parsed.data.email.toLowerCase();
-  const user = await prisma.user.findUnique({ where: { email }, select: { passwordHash: true } });
+  // Um e-mail pode ter conta Pessoa Física e conta Empresa (independentes) — o link de redefinição
+  // vale para o e-mail como um todo, e a senha nova é aplicada a todas as contas que o usam.
+  const user = await prisma.user.findFirst({ where: { email }, select: { passwordHash: true } });
 
   // Não revela se o e-mail existe ou não (evita enumeração de contas) — sempre retorna sucesso.
   if (user?.passwordHash) {
@@ -81,7 +83,7 @@ export async function resetPassword(_prev: ResetPasswordState, formData: FormDat
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10);
-  await prisma.user.update({ where: { email: identifier }, data: { passwordHash } });
+  await prisma.user.updateMany({ where: { email: identifier }, data: { passwordHash } });
   await prisma.verificationToken.deleteMany({ where: { identifier } });
 
   return { success: true };

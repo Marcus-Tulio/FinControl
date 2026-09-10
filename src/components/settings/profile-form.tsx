@@ -10,7 +10,15 @@ import { updateProfile, type SettingsFormState } from "@/server/actions/auth";
 
 const emptyState: SettingsFormState = {};
 
-export function ProfileForm({ name, email }: { name: string | null; email: string | null }) {
+export function ProfileForm({
+  name,
+  email,
+  isBusiness = false,
+}: {
+  name: string | null;
+  email: string | null;
+  isBusiness?: boolean;
+}) {
   const [state, formAction, isPending] = useActionState(updateProfile, emptyState);
   // Controlado propositalmente: o React 19 reseta campos nao controlados para o defaultValue
   // original apos a action terminar (mesmo com sucesso), o que faria o nome parecer que voltou
@@ -29,7 +37,7 @@ export function ProfileForm({ name, email }: { name: string | null; email: strin
   return (
     <form action={formAction} className="space-y-3">
       <div className="space-y-1.5">
-        <Label>Nome</Label>
+        <Label>{isBusiness ? "Razão Social" : "Nome"}</Label>
         <Input name="name" value={name_} onChange={(e) => setName(e.target.value)} required />
       </div>
       <div className="space-y-1.5">

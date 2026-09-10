@@ -1,15 +1,18 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_CATEGORIES } from "@/lib/constants";
+import { getDefaultCategories } from "@/lib/constants";
+import type { ProfileType } from "@prisma/client";
 
 /** Cria as categorias/subcategorias e contas padrão para um usuário — usado no cadastro e ao reiniciar dados. */
-export async function seedDefaultData(userId: string) {
+export async function seedDefaultData(userId: string, profileType: ProfileType) {
+  const categories = getDefaultCategories(profileType);
+
   await prisma.category.createMany({
-    data: DEFAULT_CATEGORIES.map((c) => ({ userId, name: c.name, kind: c.kind, icon: c.icon, color: c.color, isDefault: true })),
+    data: categories.map((c) => ({ userId, name: c.name, kind: c.kind, icon: c.icon, color: c.color, isDefault: true })),
   });
 
   const parents = await prisma.category.findMany({ where: { userId, isDefault: true } });
-  for (const c of DEFAULT_CATEGORIES) {
+  for (const c of categories) {
     if (!c.subcategories?.length) continue;
     const parent = parents.find((p) => p.name === c.name);
     if (!parent) continue;

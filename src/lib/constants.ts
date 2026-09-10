@@ -1,4 +1,4 @@
-import type { CategoryKind, FinancialAccountType, DebtType, InvestmentType, GoalType } from "@prisma/client";
+import type { CategoryKind, FinancialAccountType, DebtType, InvestmentType, GoalType, ProfileType } from "@prisma/client";
 
 export type DefaultCategorySeed = {
   name: string;
@@ -8,7 +8,18 @@ export type DefaultCategorySeed = {
   subcategories?: { name: string; icon: string; color: string }[];
 };
 
-export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
+/** Compartilhadas entre os dois perfis — genéricas o bastante para Pessoa Física e Empresa. */
+const SHARED_INVESTMENT_CATEGORIES: DefaultCategorySeed[] = [
+  { name: "Renda Fixa", kind: "INVESTMENT", icon: "landmark", color: "#0ea5e9" },
+  { name: "Renda Variável", kind: "INVESTMENT", icon: "trending-up", color: "#22c55e" },
+  { name: "Fundos Imobiliário", kind: "INVESTMENT", icon: "building-2", color: "#a855f7" },
+  { name: "Criptomoedas", kind: "INVESTMENT", icon: "bitcoin", color: "#f59e0b" },
+  { name: "Exterior", kind: "INVESTMENT", icon: "globe", color: "#06b6d4" },
+  { name: "Previdência", kind: "INVESTMENT", icon: "shield", color: "#64748b" },
+  { name: "Outros", kind: "INVESTMENT", icon: "shapes", color: "#94a3b8" },
+];
+
+export const DEFAULT_CATEGORIES_PERSONAL: DefaultCategorySeed[] = [
   {
     name: "Alimentação",
     kind: "EXPENSE",
@@ -206,14 +217,173 @@ export const DEFAULT_CATEGORIES: DefaultCategorySeed[] = [
   { name: "Dividendos", kind: "INCOME", icon: "coins", color: "#0d9488" },
   { name: "Aluguéis", kind: "INCOME", icon: "building-2", color: "#0891b2" },
   { name: "Outras receitas", kind: "INCOME", icon: "plus-circle", color: "#65a30d" },
-  { name: "Renda Fixa", kind: "INVESTMENT", icon: "landmark", color: "#0ea5e9" },
-  { name: "Renda Variável", kind: "INVESTMENT", icon: "trending-up", color: "#22c55e" },
-  { name: "Fundos Imobiliário", kind: "INVESTMENT", icon: "building-2", color: "#a855f7" },
-  { name: "Criptomoedas", kind: "INVESTMENT", icon: "bitcoin", color: "#f59e0b" },
-  { name: "Exterior", kind: "INVESTMENT", icon: "globe", color: "#06b6d4" },
-  { name: "Previdência", kind: "INVESTMENT", icon: "shield", color: "#64748b" },
-  { name: "Outros", kind: "INVESTMENT", icon: "shapes", color: "#94a3b8" },
+  ...SHARED_INVESTMENT_CATEGORIES,
 ];
+
+export const DEFAULT_CATEGORIES_BUSINESS: DefaultCategorySeed[] = [
+  {
+    name: "Operações",
+    kind: "EXPENSE",
+    icon: "factory",
+    color: "#475569",
+    subcategories: [
+      { name: "Insumos", icon: "package", color: "#E2E8F0" },
+      { name: "Materiais", icon: "boxes", color: "#CBD5E1" },
+      { name: "Equipamentos", icon: "container", color: "#94A3B8" },
+      { name: "Manutenção", icon: "wrench", color: "#64748B" },
+      { name: "Produção", icon: "factory", color: "#475569" },
+      { name: "Serviços operacionais", icon: "clipboard-list", color: "#334155" },
+      { name: "Outros", icon: "shapes", color: "#1E293B" },
+    ],
+  },
+  {
+    name: "Pessoal",
+    kind: "EXPENSE",
+    icon: "users",
+    color: "#D97706",
+    subcategories: [
+      { name: "Salários", icon: "wallet", color: "#FDE68A" },
+      { name: "Benefícios", icon: "heart-handshake", color: "#FCD34D" },
+      { name: "Encargos", icon: "receipt", color: "#FBBF24" },
+      { name: "Pró-labore", icon: "badge-dollar-sign", color: "#F59E0B" },
+      { name: "Treinamentos", icon: "graduation-cap", color: "#D97706" },
+      { name: "Recrutamento", icon: "user-plus", color: "#B45309" },
+      { name: "Outros", icon: "shapes", color: "#92400E" },
+    ],
+  },
+  {
+    name: "Estrutura",
+    kind: "EXPENSE",
+    icon: "warehouse",
+    color: "#2563EB",
+    subcategories: [
+      { name: "Aluguel", icon: "key", color: "#DBEAFE" },
+      { name: "Condomínio", icon: "building", color: "#BFDBFE" },
+      { name: "Energia", icon: "zap", color: "#93C5FD" },
+      { name: "Água", icon: "droplet", color: "#60A5FA" },
+      { name: "Internet", icon: "wifi", color: "#3B82F6" },
+      { name: "Segurança", icon: "shield", color: "#2563EB" },
+      { name: "Limpeza", icon: "spray-can", color: "#1D4ED8" },
+      { name: "Manutenção", icon: "wrench", color: "#1E40AF" },
+      { name: "Outros", icon: "shapes", color: "#1E3A8A" },
+    ],
+  },
+  {
+    name: "Tecnologia",
+    kind: "EXPENSE",
+    icon: "laptop",
+    color: "#7C3AED",
+    subcategories: [
+      { name: "Softwares", icon: "app-window", color: "#EDE9FE" },
+      { name: "SaaS", icon: "cloud", color: "#DDD6FE" },
+      { name: "Cloud", icon: "server", color: "#C4B5FD" },
+      { name: "Hospedagem", icon: "database", color: "#A78BFA" },
+      { name: "Domínios", icon: "globe", color: "#8B5CF6" },
+      { name: "Equipamentos", icon: "laptop", color: "#7C3AED" },
+      { name: "Suporte técnico", icon: "life-buoy", color: "#6D28D9" },
+      { name: "Outros", icon: "shapes", color: "#5B21B6" },
+    ],
+  },
+  {
+    name: "Marketing",
+    kind: "EXPENSE",
+    icon: "megaphone",
+    color: "#DB2777",
+    subcategories: [
+      { name: "Publicidade", icon: "megaphone", color: "#FBCFE8" },
+      { name: "Redes sociais", icon: "share-2", color: "#F9A8D4" },
+      { name: "Google Ads", icon: "target", color: "#F472B6" },
+      { name: "Eventos", icon: "calendar", color: "#EC4899" },
+      { name: "Materiais promocionais", icon: "gift", color: "#DB2777" },
+      { name: "Agência", icon: "users", color: "#BE185D" },
+      { name: "Outros", icon: "shapes", color: "#9D174D" },
+    ],
+  },
+  {
+    name: "Vendas",
+    kind: "EXPENSE",
+    icon: "trending-up",
+    color: "#059669",
+    subcategories: [
+      { name: "Comissões", icon: "percent", color: "#A7F3D0" },
+      { name: "Representação", icon: "handshake", color: "#6EE7B7" },
+      { name: "Prospecção", icon: "search", color: "#34D399" },
+      { name: "CRM", icon: "database", color: "#10B981" },
+      { name: "Eventos comerciais", icon: "calendar", color: "#059669" },
+      { name: "Materiais de vendas", icon: "file-text", color: "#047857" },
+      { name: "Outros", icon: "shapes", color: "#065F46" },
+    ],
+  },
+  {
+    name: "Logística",
+    kind: "EXPENSE",
+    icon: "truck",
+    color: "#EA580C",
+    subcategories: [
+      { name: "Fretes", icon: "truck", color: "#FED7AA" },
+      { name: "Transportadoras", icon: "container", color: "#FDBA74" },
+      { name: "Correios", icon: "mail", color: "#FB923C" },
+      { name: "Armazenagem", icon: "warehouse", color: "#F97316" },
+      { name: "Embalagens", icon: "package", color: "#EA580C" },
+      { name: "Entregas", icon: "package-check", color: "#C2410C" },
+      { name: "Outros", icon: "shapes", color: "#9A3412" },
+    ],
+  },
+  {
+    name: "Administrativo",
+    kind: "EXPENSE",
+    icon: "briefcase",
+    color: "#4F46E5",
+    subcategories: [
+      { name: "Contabilidade", icon: "calculator", color: "#C7D2FE" },
+      { name: "Jurídico", icon: "scale", color: "#A5B4FC" },
+      { name: "Consultoria", icon: "briefcase", color: "#818CF8" },
+      { name: "Documentação", icon: "file-text", color: "#6366F1" },
+      { name: "Certificações", icon: "award", color: "#4F46E5" },
+      { name: "Material de escritório", icon: "pencil", color: "#4338CA" },
+      { name: "Outros", icon: "shapes", color: "#3730A3" },
+    ],
+  },
+  {
+    name: "Financeiro",
+    kind: "EXPENSE",
+    icon: "landmark",
+    color: "#9333EA",
+    subcategories: [
+      { name: "Tarifas bancárias", icon: "landmark", color: "#E9D5FF" },
+      { name: "Taxas de cartão", icon: "credit-card", color: "#D8B4FE" },
+      { name: "Juros", icon: "percent", color: "#C084FC" },
+      { name: "Empréstimos", icon: "hand-coins", color: "#A855F7" },
+      { name: "Financiamentos", icon: "file-text", color: "#9333EA" },
+      { name: "Câmbio", icon: "repeat", color: "#7E22CE" },
+      { name: "Outros", icon: "shapes", color: "#6B21A8" },
+    ],
+  },
+  {
+    name: "Impostos e Taxas",
+    kind: "EXPENSE",
+    icon: "receipt",
+    color: "#B91C1C",
+    subcategories: [
+      { name: "Simples Nacional", icon: "file-text", color: "#FECACA" },
+      { name: "ISS", icon: "receipt", color: "#FCA5A5" },
+      { name: "ICMS", icon: "landmark", color: "#F87171" },
+      { name: "PIS/COFINS", icon: "percent", color: "#EF4444" },
+      { name: "IRPJ/CSLL", icon: "calculator", color: "#DC2626" },
+      { name: "Taxas municipais", icon: "building", color: "#B91C1C" },
+      { name: "Taxas estaduais", icon: "shield", color: "#991B1B" },
+      { name: "Outros", icon: "shapes", color: "#7F1D1D" },
+    ],
+  },
+  { name: "Vendas", kind: "INCOME", icon: "trending-up", color: "#059669" },
+  { name: "Serviços prestados", kind: "INCOME", icon: "briefcase", color: "#0d9488" },
+  { name: "Outras receitas", kind: "INCOME", icon: "plus-circle", color: "#65a30d" },
+  ...SHARED_INVESTMENT_CATEGORIES,
+];
+
+export function getDefaultCategories(profileType: ProfileType): DefaultCategorySeed[] {
+  return profileType === "BUSINESS" ? DEFAULT_CATEGORIES_BUSINESS : DEFAULT_CATEGORIES_PERSONAL;
+}
 
 export const ACCOUNT_TYPE_LABELS: Record<FinancialAccountType, string> = {
   CHECKING: "Conta corrente",

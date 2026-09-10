@@ -29,6 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         expenseCategories={toTree(expenseCategories)}
         investmentCategories={toTree(investmentCategories)}
         notifications={notifications}
+        isBusiness={user?.profileType === "BUSINESS"}
       >
         {children}
       </AppShell>

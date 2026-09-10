@@ -19,10 +19,13 @@ export function RegisterForm() {
   const [state, formAction, isPending] = useActionState(registerUser, initialState);
   // React 19 reseta os campos do form automaticamente após a action ter sucesso, então as
   // credenciais precisam ser guardadas aqui antes disso, para o auto-login funcionar depois.
-  const credentialsRef = useRef<{ email: string; password: string } | null>(null);
+  const credentialsRef = useRef<{ email: string; password: string; profileType: "PERSONAL" | "BUSINESS" } | null>(
+    null
+  );
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [profileType, setProfileType] = useState<"PERSONAL" | "BUSINESS">("PERSONAL");
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   const canSubmit = password.length >= 8 && confirmPassword.length >= 8 && !passwordsMismatch;
 
@@ -30,6 +33,7 @@ export function RegisterForm() {
     credentialsRef.current = {
       email: String(formData.get("email") ?? ""),
       password: String(formData.get("password") ?? ""),
+      profileType: String(formData.get("profileType") ?? "PERSONAL") as "PERSONAL" | "BUSINESS",
     };
     return formAction(formData);
   }
@@ -59,8 +63,34 @@ export function RegisterForm() {
         )}
         <form id="register-form" action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <Input id="name" name="name" placeholder="Seu nome" required autoComplete="name" />
+            <Label>Tipo de perfil</Label>
+            <input type="hidden" name="profileType" value={profileType} />
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={profileType === "PERSONAL" ? "default" : "outline"}
+                onClick={() => setProfileType("PERSONAL")}
+              >
+                Individual
+              </Button>
+              <Button
+                type="button"
+                variant={profileType === "BUSINESS" ? "default" : "outline"}
+                onClick={() => setProfileType("BUSINESS")}
+              >
+                Empresa
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">{profileType === "BUSINESS" ? "Razão Social" : "Nome"}</Label>
+            <Input
+              id="name"
+              name="name"
+              placeholder={profileType === "BUSINESS" ? "Nome da empresa" : "Seu nome"}
+              required
+              autoComplete="name"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>

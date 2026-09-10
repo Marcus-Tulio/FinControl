@@ -56,7 +56,7 @@ function inDays(n: number) {
 }
 
 async function main() {
-  const existing = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
+  const existing = await prisma.user.findFirst({ where: { email: DEMO_EMAIL, profileType: "PERSONAL" } });
   if (existing) {
     console.log("Demo user already exists, deleting to reseed...");
     await prisma.user.delete({ where: { id: existing.id } });

@@ -29,6 +29,7 @@ const baseSchema = z.object({
   isRecurring: booleanField(false),
   frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
   installments: z.coerce.number().int().min(1).max(360).default(1),
+  expenseType: z.enum(["FIXED", "VARIABLE", "EXTRAORDINARY"]).optional(),
 });
 
 function revalidateAll() {
@@ -73,6 +74,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         dueDate: isFirst && data.isPaid ? null : occDate,
         paidDate: isFirst && data.isPaid ? occDate : null,
         isEssential: data.isEssential,
+        expenseType: data.expenseType ?? null,
         installmentGroupId: groupId,
         installmentNumber: i + 1,
         installmentTotal: data.installments,
@@ -91,6 +93,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         frequency: data.frequency,
         startDate: date,
         isEssential: data.isEssential,
+        expenseType: data.expenseType ?? null,
       },
     });
 
@@ -109,6 +112,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
       dueDate: i === 0 && data.isPaid ? null : occDate,
       paidDate: i === 0 && data.isPaid ? occDate : null,
       isEssential: data.isEssential,
+      expenseType: data.expenseType ?? null,
     }));
     await prisma.transaction.createMany({ data: rows });
   } else {
@@ -126,6 +130,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         dueDate: status === "PENDING" ? date : null,
         paidDate: status === "PAID" ? date : null,
         isEssential: data.isEssential,
+        expenseType: data.expenseType ?? null,
       },
     });
   }
@@ -165,6 +170,7 @@ export async function updateTransaction(id: string, _prev: TransactionFormState,
       dueDate: status !== "PAID" ? date : null,
       paidDate: status === "PAID" ? date : null,
       isEssential: data.isEssential,
+      expenseType: data.expenseType ?? null,
     },
   });
 
@@ -198,6 +204,7 @@ export async function duplicateTransaction(id: string) {
       amount: existing.amount,
       date: new Date(),
       isEssential: existing.isEssential,
+      expenseType: existing.expenseType,
       tags: existing.tags,
     },
   });

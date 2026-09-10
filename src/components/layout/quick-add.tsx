@@ -19,6 +19,7 @@ type Account = { id: string; name: string };
 
 const emptyTx: TransactionFormState = {};
 const emptyTransfer: AccountFormState = {};
+const EXPENSE_TYPE_LABELS = { FIXED: "Fixa", VARIABLE: "Variável", EXTRAORDINARY: "Extraordinária" };
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -100,6 +101,20 @@ function IncomeExpenseForm({
           </div>
         )}
       </div>
+
+      {kind === "EXPENSE" && (
+        <div className="space-y-1.5">
+          <Label>Tipo de despesa (opcional)</Label>
+          <Select items={EXPENSE_TYPE_LABELS} name="expenseType">
+            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="FIXED">Fixa</SelectItem>
+              <SelectItem value="VARIABLE">Variável</SelectItem>
+              <SelectItem value="EXTRAORDINARY">Extraordinária</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className={`space-y-2 ${!showInstallmentsPair ? "col-span-2" : ""}`}>

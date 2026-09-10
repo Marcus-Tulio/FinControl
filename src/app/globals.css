@@ -192,6 +192,40 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Tema do perfil Empresa: paleta azul-marinho no lugar do verde-petróleo padrão. Aplicado como
+   classe em <html> (não inline via JS) para que a variação clara/escura funcione de graça pela
+   cascata normal do CSS, e para alcançar também conteúdo portalizado (Popover, Dialog, Sheet). */
+.theme-business {
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --ring: #3b82f6;
+  --status-good: #3b82f6;
+  --series-3: #3b82f6;
+  --accent: #dbeafe;
+  --accent-foreground: #1e3a8a;
+
+  --sidebar: #0b1930;
+  --sidebar-accent: #132a45;
+  --sidebar-border: #1c3350;
+  --sidebar-primary: #3b82f6;
+  --sidebar-ring: #3b82f6;
+}
+
+.dark.theme-business {
+  --background: #0a1628;
+  --card: #111f38;
+  --card-foreground: #f2f6fb;
+  --popover: #111f38;
+  --popover-foreground: #f2f6fb;
+  --border: #1c3350;
+  --muted: #16243d;
+  --muted-foreground: #93a5c4;
+  --secondary: #16243d;
+  --secondary-foreground: #f2f6fb;
+  --accent: #1e3a5f;
+  --accent-foreground: #dbeafe;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

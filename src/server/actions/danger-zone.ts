@@ -2,29 +2,12 @@
 
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
 import { seedDefaultData } from "@/server/seed-defaults";
+import { revalidateEverything } from "@/server/revalidate";
 
 export type DangerZoneState = { error?: string; success?: boolean };
-
-function revalidateEverything() {
-  revalidatePath("/");
-  revalidatePath("/transacoes");
-  revalidatePath("/receitas");
-  revalidatePath("/despesas");
-  revalidatePath("/contas");
-  revalidatePath("/contas-a-pagar");
-  revalidatePath("/orcamento");
-  revalidatePath("/calendario");
-  revalidatePath("/categorias");
-  revalidatePath("/metas");
-  revalidatePath("/dividas");
-  revalidatePath("/investimentos");
-  revalidatePath("/relatorios");
-  revalidatePath("/configuracoes");
-}
 
 /** Se a conta usa senha, exige e valida a senha atual; contas só com login social não têm o que verificar. */
 async function checkCurrentPassword(userId: string, currentPassword: string): Promise<string | null> {
@@ -47,6 +30,8 @@ export async function resetAccountData(_prev: DangerZoneState, formData: FormDat
   const passwordError = await checkCurrentPassword(userId, parsed.data.currentPassword ?? "");
   if (passwordError) return { error: passwordError };
 
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { profileType: true } });
+
   await prisma.$transaction([
     prisma.transaction.deleteMany({ where: { userId } }),
     prisma.recurringRule.deleteMany({ where: { userId } }),
@@ -59,7 +44,7 @@ export async function resetAccountData(_prev: DangerZoneState, formData: FormDat
     prisma.category.deleteMany({ where: { userId } }),
   ]);
 
-  await seedDefaultData(userId);
+  await seedDefaultData(userId, user.profileType);
 
   revalidateEverything();
   return { success: true };

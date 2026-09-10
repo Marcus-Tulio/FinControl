@@ -14,13 +14,22 @@ const providers: Provider[] = [
     credentials: {
       email: { label: "E-mail", type: "email" },
       password: { label: "Senha", type: "password" },
+      profileType: { label: "Tipo de perfil", type: "text" },
     },
     async authorize(credentials) {
       const email = credentials?.email as string | undefined;
       const password = credentials?.password as string | undefined;
+      const profileType = credentials?.profileType as "PERSONAL" | "BUSINESS" | undefined;
       if (!email || !password) return null;
 
-      const user = await prisma.user.findUnique({ where: { email } });
+      // Um mesmo e-mail pode ter uma conta Pessoa Física e uma conta Empresa (contas independentes,
+      // cada uma com sua própria senha) — profileType desambigua qual delas autenticar.
+      const candidates = await prisma.user.findMany({ where: { email } });
+      const user = profileType
+        ? candidates.find((c) => c.profileType === profileType)
+        : candidates.length === 1
+          ? candidates[0]
+          : undefined;
       if (!user?.passwordHash) return null;
 
       const valid = await bcrypt.compare(password, user.passwordHash);
@@ -78,8 +87,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
       }
       if (user || trigger === "update") {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { pinHash: true, name: true } });
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { pinHash: true, name: true, profileType: true },
+        });
         token.hasPin = Boolean(dbUser?.pinHash);
+        token.profileType = dbUser?.profileType;
         if (trigger === "update" && dbUser) token.name = dbUser.name;
       }
       return token;
@@ -88,6 +101,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user && token.id) {
         session.user.id = token.id as string;
         session.user.hasPin = Boolean(token.hasPin);
+        session.user.profileType = token.profileType ?? "PERSONAL";
       }
       return session;
     },

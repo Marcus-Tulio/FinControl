@@ -7,16 +7,16 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({ onNavigate, isBusiness = false }: { onNavigate?: () => void; isBusiness?: boolean }) {
   const pathname = usePathname();
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="px-5 py-5">
-        <Logo variant="sidebar" />
-      </div>
+      <Link href="/" onClick={onNavigate} className="block px-5 py-5">
+        <Logo variant="sidebar" isBusiness={isBusiness} />
+      </Link>
 
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-6">
         {NAV_GROUPS.map((group, index) => (

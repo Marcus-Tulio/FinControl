@@ -14,6 +14,7 @@ export default async function ConfiguracoesPage() {
   const dbUser = user?.id ? await prisma.user.findUnique({ where: { id: user.id } }) : null;
   const hasPassword = Boolean(dbUser?.passwordHash);
   const hasPin = Boolean(dbUser?.pinHash);
+  const isBusiness = dbUser?.profileType === "BUSINESS";
 
   return (
     <div className="max-w-2xl space-y-4">
@@ -22,10 +23,10 @@ export default async function ConfiguracoesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Perfil</CardTitle>
-          <CardDescription>Suas informações pessoais.</CardDescription>
+          <CardDescription>{isBusiness ? "Informações da empresa." : "Suas informações pessoais."}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileForm name={user?.name ?? null} email={user?.email ?? null} />
+          <ProfileForm name={user?.name ?? null} email={user?.email ?? null} isBusiness={isBusiness} />
         </CardContent>
       </Card>
 

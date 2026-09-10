@@ -28,6 +28,7 @@ type ExistingTransaction = {
   date: Date;
   status: string;
   isEssential: boolean;
+  expenseType?: "FIXED" | "VARIABLE" | "EXTRAORDINARY" | null;
 };
 
 const KIND_LABELS: Record<"INCOME" | "EXPENSE" | "INVESTMENT" | "ADJUSTMENT", string> = {
@@ -38,6 +39,7 @@ const KIND_LABELS: Record<"INCOME" | "EXPENSE" | "INVESTMENT" | "ADJUSTMENT", st
 };
 
 const FREQUENCY_LABELS = { DAILY: "Diária", WEEKLY: "Semanal", MONTHLY: "Mensal", YEARLY: "Anual" };
+const EXPENSE_TYPE_LABELS = { FIXED: "Fixa", VARIABLE: "Variável", EXTRAORDINARY: "Extraordinária" };
 
 const emptyState: TransactionFormState = {};
 
@@ -159,6 +161,20 @@ export function TransactionFormDialog({
               </div>
             )}
           </div>
+
+          {kind === "EXPENSE" && (
+            <div className="space-y-1.5">
+              <Label>Tipo de despesa (opcional)</Label>
+              <Select items={EXPENSE_TYPE_LABELS} name="expenseType" defaultValue={transaction?.expenseType ?? undefined}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FIXED">Fixa</SelectItem>
+                  <SelectItem value="VARIABLE">Variável</SelectItem>
+                  <SelectItem value="EXTRAORDINARY">Extraordinária</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {!isEdit && (
             <div className="grid grid-cols-2 gap-3">

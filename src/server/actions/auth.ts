@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/server/session";
 import { PIN_COOKIE, PIN_COOKIE_MAX_AGE, signPinToken } from "@/lib/pin";
 import { seedDefaultData } from "@/server/seed-defaults";
+import type { ProfileType } from "@prisma/client";
 
 export type RegisterFormState = { error?: string; success?: boolean };
 
@@ -17,6 +18,7 @@ const registerSchema = z
     email: z.string().email("E-mail inválido"),
     password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirme a senha"),
+    profileType: z.enum(["PERSONAL", "BUSINESS"]).default("PERSONAL"),
   })
   .refine((d) => d.password === d.confirmPassword, { message: "As senhas não coincidem", path: ["confirmPassword"] });
 
@@ -24,20 +26,35 @@ export async function registerUser(_prev: RegisterFormState, formData: FormData)
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, profileType } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "Já existe uma conta com este e-mail" };
+  const existing = await prisma.user.findFirst({ where: { email, profileType } });
+  if (existing) {
+    return {
+      error:
+        profileType === "BUSINESS"
+          ? "Já existe uma conta Empresa com este e-mail"
+          : "Já existe uma conta Individual com este e-mail",
+    };
+  }
 
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: { name, email, passwordHash, profileType },
   });
 
-  await seedDefaultData(user.id);
+  await seedDefaultData(user.id, profileType);
 
   return { success: true };
+}
+
+/** Usado na tela de login para saber quais tipos de perfil existem para um e-mail (mesmo e-mail pode
+ * ter uma conta Pessoa Física e uma conta Empresa, cada uma independente). Não expõe mais que isso. */
+export async function getProfileTypesForEmail(email: string): Promise<ProfileType[]> {
+  if (!email) return [];
+  const users = await prisma.user.findMany({ where: { email }, select: { profileType: true } });
+  return users.map((u) => u.profileType);
 }
 
 export type SettingsFormState = { error?: string; success?: boolean };
