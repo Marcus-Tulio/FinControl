@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AVATAR_ICONS } from "@/lib/avatars";
+import { avatarIconSrc } from "@/lib/avatars";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +28,7 @@ export function UserMenu({
   avatarIcon?: string | null;
 }) {
   const initials = (name || email || "U").slice(0, 2).toUpperCase();
-  const AvatarIconComponent = avatarIcon ? AVATAR_ICONS[avatarIcon] : null;
+  const avatarSrc = avatarIcon ? avatarIconSrc(avatarIcon) : image ?? undefined;
   const router = useRouter();
 
   return (
@@ -37,16 +37,8 @@ export function UserMenu({
         render={<Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Menu do perfil" />}
       >
         <Avatar className="h-8 w-8">
-          {AvatarIconComponent ? (
-            <AvatarFallback>
-              <AvatarIconComponent className="h-[1.1rem] w-[1.1rem]" />
-            </AvatarFallback>
-          ) : (
-            <>
-              <AvatarImage src={image ?? undefined} alt={name ?? "Usuário"} />
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-            </>
-          )}
+          <AvatarImage src={avatarSrc} alt={name ?? "Usuário"} />
+          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

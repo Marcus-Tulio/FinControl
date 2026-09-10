@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AVATAR_ICONS, AVATAR_ICON_KEYS } from "@/lib/avatars";
+import { AVATAR_ICON_KEYS, avatarIconSrc } from "@/lib/avatars";
 import { updateAvatar } from "@/server/actions/auth";
 
 export function AvatarPickerForm({ avatarIcon }: { avatarIcon: string | null }) {
@@ -33,7 +33,6 @@ export function AvatarPickerForm({ avatarIcon }: { avatarIcon: string | null }) 
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {AVATAR_ICON_KEYS.map((key) => {
-          const Icon = AVATAR_ICONS[key];
           const selected = avatarIcon === key;
           return (
             <button
@@ -44,11 +43,12 @@ export function AvatarPickerForm({ avatarIcon }: { avatarIcon: string | null }) 
               aria-label={`Usar avatar ${key}`}
               aria-pressed={selected}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors disabled:opacity-50",
-                selected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:bg-accent hover:text-accent-foreground"
+                "flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted transition-colors disabled:opacity-50",
+                selected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:bg-accent"
               )}
             >
-              <Icon className="h-5 w-5" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={avatarIconSrc(key)} alt="" className="h-full w-full object-cover" />
             </button>
           );
         })}
