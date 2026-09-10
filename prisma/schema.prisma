@@ -15,7 +15,6 @@ model User {
   email          String?
   emailVerified  DateTime?
   image          String?
-  avatarIcon     String?
   passwordHash   String?
   pinHash        String?
   currency       String    @default("BRL")

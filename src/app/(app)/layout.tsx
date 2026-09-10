@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <SessionProvider>
       <AppShell
-        user={{ name: user?.name, email: user?.email, image: user?.image, avatarIcon: user?.avatarIcon }}
+        user={{ name: user?.name, email: user?.email, image: user?.image }}
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
         incomeCategories={toTree(incomeCategories)}
         expenseCategories={toTree(expenseCategories)}

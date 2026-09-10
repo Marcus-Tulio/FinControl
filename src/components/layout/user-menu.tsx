@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { avatarIconSrc } from "@/lib/avatars";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,19 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserMenu({
-  name,
-  email,
-  image,
-  avatarIcon,
-}: {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  avatarIcon?: string | null;
-}) {
+export function UserMenu({ name, email, image }: { name?: string | null; email?: string | null; image?: string | null }) {
   const initials = (name || email || "U").slice(0, 2).toUpperCase();
-  const avatarSrc = avatarIcon ? avatarIconSrc(avatarIcon) : image ?? undefined;
   const router = useRouter();
 
   return (
@@ -37,7 +25,7 @@ export function UserMenu({
         render={<Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Menu do perfil" />}
       >
         <Avatar className="h-8 w-8">
-          <AvatarImage src={avatarSrc} alt={name ?? "Usuário"} />
+          <AvatarImage src={image ?? undefined} alt={name ?? "Usuário"} />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

@@ -6,7 +6,6 @@ declare module "next-auth" {
       id: string;
       hasPin: boolean;
       profileType: "PERSONAL" | "BUSINESS";
-      avatarIcon: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -16,6 +15,5 @@ declare module "next-auth/jwt" {
     id?: string;
     hasPin?: boolean;
     profileType?: "PERSONAL" | "BUSINESS";
-    avatarIcon?: string | null;
   }
 }

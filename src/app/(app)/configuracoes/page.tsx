@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ProfileForm } from "@/components/settings/profile-form";
-import { AvatarPickerForm } from "@/components/settings/avatar-picker-form";
 import { PasswordForm } from "@/components/settings/password-form";
 import { PinForm } from "@/components/settings/pin-form";
 import { AppearanceSection } from "@/components/settings/appearance-section";
@@ -26,13 +25,7 @@ export default async function ConfiguracoesPage() {
           <CardTitle className="text-base">Perfil</CardTitle>
           <CardDescription>{isBusiness ? "Informações da empresa." : "Suas informações pessoais."}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {!isBusiness && (
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium">Avatar</p>
-              <AvatarPickerForm avatarIcon={dbUser?.avatarIcon ?? null} />
-            </div>
-          )}
+        <CardContent>
           <ProfileForm name={user?.name ?? null} email={user?.email ?? null} isBusiness={isBusiness} />
         </CardContent>
       </Card>

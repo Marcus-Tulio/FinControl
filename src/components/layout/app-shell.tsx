@@ -35,7 +35,7 @@ export function AppShell({
   isBusiness,
 }: {
   children: React.ReactNode;
-  user: { name?: string | null; email?: string | null; image?: string | null; avatarIcon?: string | null };
+  user: { name?: string | null; email?: string | null; image?: string | null };
   accounts: Account[];
   incomeCategories: CategoryTree[];
   expenseCategories: CategoryTree[];
@@ -97,7 +97,7 @@ export function AppShell({
             <div className="flex items-center gap-1">
               <NotificationBell initialNotifications={notifications} />
               <ThemeToggle />
-              <UserMenu name={user.name} email={user.email} image={user.image} avatarIcon={user.avatarIcon} />
+              <UserMenu name={user.name} email={user.email} image={user.image} />
             </div>
           </header>
 
