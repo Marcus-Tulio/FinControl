@@ -120,8 +120,8 @@ export function TransactionFormDialog({
           <CategoryPicker key={kind} categories={filteredCategories} defaultCategoryId={transaction?.categoryId} allowSubcategory={kind === "EXPENSE"} />
 
           <div className="space-y-1.5">
-            <Label>Descrição</Label>
-            <Input name="description" required defaultValue={transaction?.description} />
+            <Label>Descrição (opcional)</Label>
+            <Input name="description" defaultValue={transaction?.description} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

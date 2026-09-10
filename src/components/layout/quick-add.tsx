@@ -61,8 +61,8 @@ function IncomeExpenseForm({
       <input type="hidden" name="kind" value={kind} />
       <CategoryPicker categories={categories} allowSubcategory={kind === "EXPENSE"} />
       <div className="space-y-1.5">
-        <Label>Descrição</Label>
-        <Input name="description" required placeholder={descPlaceholder} />
+        <Label>Descrição (opcional)</Label>
+        <Input name="description" placeholder={descPlaceholder} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">

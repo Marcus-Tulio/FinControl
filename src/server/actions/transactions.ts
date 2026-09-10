@@ -14,11 +14,13 @@ function booleanField(defaultValue: boolean) {
   return z.preprocess((v) => (v === undefined ? defaultValue : v === "true"), z.boolean());
 }
 
+const KIND_LABELS = { INCOME: "Receita", EXPENSE: "Despesa", INVESTMENT: "Investimento", ADJUSTMENT: "Ajuste" } as const;
+
 const baseSchema = z.object({
   kind: z.enum(["INCOME", "EXPENSE", "INVESTMENT", "ADJUSTMENT"]),
   financialAccountId: z.string().min(1, "Escolha uma conta"),
   categoryId: z.string().optional().nullable(),
-  description: z.string().min(1, "Informe uma descrição"),
+  description: z.string().optional(),
   notes: z.string().optional(),
   amount: z.coerce.number().positive("Informe um valor válido"),
   date: z.string().min(1, "Informe a data"),
@@ -49,6 +51,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
   const data = parsed.data;
   const date = new Date(data.date);
   const status: "PAID" | "PENDING" = data.isPaid ? "PAID" : "PENDING";
+  const description = data.description?.trim() || KIND_LABELS[data.kind];
 
   if (data.installments > 1 && data.kind === "EXPENSE") {
     const groupId = randomUUID();
@@ -63,7 +66,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         categoryId: data.categoryId,
         kind: data.kind,
         status: isFirst ? status : ("PENDING" as const),
-        description: `${data.description} (${i + 1}/${data.installments})`,
+        description: `${description} (${i + 1}/${data.installments})`,
         notes: data.notes,
         amount: perInstallment,
         date: occDate,
@@ -83,7 +86,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         financialAccountId: data.financialAccountId,
         categoryId: data.categoryId,
         kind: data.kind,
-        description: data.description,
+        description,
         amount: data.amount,
         frequency: data.frequency,
         startDate: date,
@@ -99,7 +102,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
       recurringRuleId: rule.id,
       kind: data.kind,
       status: i === 0 && data.isPaid ? ("PAID" as const) : ("PENDING" as const),
-      description: data.description,
+      description,
       notes: data.notes,
       amount: data.amount,
       date: occDate,
@@ -116,7 +119,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
         categoryId: data.categoryId,
         kind: data.kind,
         status,
-        description: data.description,
+        description,
         notes: data.notes,
         amount: data.amount,
         date,
@@ -146,6 +149,7 @@ export async function updateTransaction(id: string, _prev: TransactionFormState,
   const data = parsed.data;
   const date = new Date(data.date);
   const status = data.isPaid ? "PAID" : existing.status === "OVERDUE" ? "OVERDUE" : "PENDING";
+  const description = data.description?.trim() || KIND_LABELS[data.kind];
 
   await prisma.transaction.update({
     where: { id },
@@ -154,7 +158,7 @@ export async function updateTransaction(id: string, _prev: TransactionFormState,
       categoryId: data.categoryId,
       kind: data.kind,
       status,
-      description: data.description,
+      description,
       notes: data.notes,
       amount: data.amount,
       date,
