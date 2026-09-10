@@ -14,7 +14,7 @@ import { GoalProgressCard } from "@/components/shared/goal-progress-card";
 import { InsightsList } from "@/components/shared/insights-list";
 import { EmptyState } from "@/components/shared/empty-state";
 import { IncomeExpenseChart } from "@/components/charts/income-expense-chart";
-import { CategoryDonutChart } from "@/components/charts/category-donut-chart";
+import { CategorySunburstChart } from "@/components/charts/category-sunburst-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatMonthYear } from "@/lib/format";
@@ -102,7 +102,7 @@ export default async function DashboardPage({
             <CardTitle className="text-base">Para onde vai seu dinheiro</CardTitle>
           </CardHeader>
           <CardContent>
-            <CategoryDonutChart data={summary.categoryBreakdown} />
+            <CategorySunburstChart data={summary.categoryBreakdown} />
           </CardContent>
         </Card>
       </div>

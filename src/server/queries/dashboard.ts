@@ -7,7 +7,6 @@ import { percentChange } from "@/lib/finance";
 import { getAccountBalances } from "./accounts";
 import { getPortfolioSummary } from "./investments";
 import { CHART_COLORS } from "@/lib/constants";
-import { deriveShades } from "@/lib/color-shades";
 
 export async function getNetWorthSeries(userId: string, months = 12) {
   const [accounts, transactions] = await Promise.all([
@@ -86,7 +85,7 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
     const family = category?.parent ?? category;
     const familyColor = family?.color ?? category?.color ?? CHART_COLORS[i % CHART_COLORS.length];
     return {
-      categoryId: g.categoryId,
+      categoryId: g.categoryId!,
       name: category?.name ?? "Outros",
       color: category?.color ?? familyColor,
       value: toNumber(g._sum.amount),
@@ -111,17 +110,17 @@ export async function getCategoryBreakdown(userId: string, start: Date, end: Dat
     return b.value - a.value;
   });
 
-  // Dentro de cada família (já ordenada por valor decrescente), quanto maior o gasto mais escura a tonalidade da cor-base da categoria-mãe.
-  let i = 0;
-  while (i < sorted.length) {
-    let j = i + 1;
-    while (j < sorted.length && sorted[j].familyId === sorted[i].familyId) j++;
-    const shades = deriveShades(sorted[i].familyColor, j - i);
-    for (let k = i; k < j; k++) sorted[k].color = shades[k - i];
-    i = j;
+  const inner = sorted.map(({ categoryId, name, color, value, familyId }) => ({ categoryId, name, color, value, familyId }));
+
+  // Anel externo: uma fatia por categoria-mãe (família), na cor-base e no mesmo agrupamento/ordem do anel interno.
+  const outerMap = new Map<string, { categoryId: string; name: string; color: string; value: number }>();
+  for (const s of sorted) {
+    const existing = outerMap.get(s.familyId);
+    if (existing) existing.value += s.value;
+    else outerMap.set(s.familyId, { categoryId: s.familyId, name: s.familyName, color: s.familyColor, value: s.value });
   }
 
-  return sorted.map(({ categoryId, name, color, value }) => ({ categoryId, name, color, value }));
+  return { inner, outer: Array.from(outerMap.values()) };
 }
 
 export async function getRecentTransactions(userId: string, limit = 6) {

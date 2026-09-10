@@ -1,7 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_CATEGORIES } from "@/lib/constants";
-import { deriveShades } from "@/lib/color-shades";
 
 /** Cria as categorias/subcategorias e contas padrão para um usuário — usado no cadastro e ao reiniciar dados. */
 export async function seedDefaultData(userId: string) {
@@ -14,14 +13,13 @@ export async function seedDefaultData(userId: string) {
     if (!c.subcategories?.length) continue;
     const parent = parents.find((p) => p.name === c.name);
     if (!parent) continue;
-    const shades = deriveShades(c.color, c.subcategories.length);
     await prisma.category.createMany({
-      data: c.subcategories.map((sub, i) => ({
+      data: c.subcategories.map((sub) => ({
         userId,
         name: sub.name,
         kind: c.kind,
         icon: sub.icon,
-        color: shades[i],
+        color: sub.color,
         parentId: parent.id,
         isDefault: true,
       })),
