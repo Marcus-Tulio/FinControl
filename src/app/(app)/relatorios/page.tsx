@@ -40,7 +40,7 @@ export default async function RelatoriosPage() {
     date: t.date,
     description: t.description,
     category: t.category?.name ?? "—",
-    account: t.financialAccount.name,
+    account: t.financialAccount?.name ?? "Sem conta",
     kind: t.kind,
     amount: Number(t.amount),
   }));

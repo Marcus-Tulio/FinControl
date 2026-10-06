@@ -20,7 +20,7 @@ type Category = CategoryTree & { kind: TransactionKind };
 type ExistingTransaction = {
   id: string;
   kind: TransactionKind;
-  financialAccountId: string;
+  financialAccountId: string | null;
   categoryId: string | null;
   description: string;
   notes: string | null;
@@ -138,8 +138,8 @@ export function TransactionFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Conta</Label>
-            <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required defaultValue={transaction?.financialAccountId}>
+            <Label>Conta (opcional)</Label>
+            <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" defaultValue={transaction?.financialAccountId ?? undefined}>
               <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}

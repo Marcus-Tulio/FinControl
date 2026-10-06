@@ -14,11 +14,16 @@ function booleanField(defaultValue: boolean) {
   return z.preprocess((v) => (v === undefined ? defaultValue : v === "true"), z.boolean());
 }
 
+/** Selects opcionais enviam "" quando nada é escolhido — .optional() sozinho não aceita string vazia. */
+function emptyToUndefined(v: unknown) {
+  return v === "" || v === undefined ? undefined : v;
+}
+
 const KIND_LABELS = { INCOME: "Receita", EXPENSE: "Despesa", INVESTMENT: "Investimento", ADJUSTMENT: "Ajuste" } as const;
 
 const baseSchema = z.object({
   kind: z.enum(["INCOME", "EXPENSE", "INVESTMENT", "ADJUSTMENT"]),
-  financialAccountId: z.string().min(1, "Escolha uma conta"),
+  financialAccountId: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
   categoryId: z.string().optional().nullable(),
   description: z.string().optional(),
   notes: z.string().optional(),
@@ -27,9 +32,9 @@ const baseSchema = z.object({
   isEssential: booleanField(true),
   isPaid: booleanField(true),
   isRecurring: booleanField(false),
-  frequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
+  frequency: z.preprocess(emptyToUndefined, z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional()),
   installments: z.coerce.number().int().min(1).max(360).default(1),
-  expenseType: z.enum(["FIXED", "VARIABLE", "EXTRAORDINARY"]).optional(),
+  expenseType: z.preprocess(emptyToUndefined, z.enum(["FIXED", "VARIABLE", "EXTRAORDINARY"]).optional()),
 });
 
 function revalidateAll() {
@@ -63,7 +68,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
       const isFirst = i === 0;
       return {
         userId,
-        financialAccountId: data.financialAccountId,
+        financialAccountId: data.financialAccountId ?? null,
         categoryId: data.categoryId,
         kind: data.kind,
         status: isFirst ? status : ("PENDING" as const),
@@ -85,7 +90,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
     const rule = await prisma.recurringRule.create({
       data: {
         userId,
-        financialAccountId: data.financialAccountId,
+        financialAccountId: data.financialAccountId ?? null,
         categoryId: data.categoryId,
         kind: data.kind,
         description,
@@ -100,7 +105,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
     const occurrences = generateOccurrences(date, data.frequency, 1, 12);
     const rows = occurrences.map((occDate, i) => ({
       userId,
-      financialAccountId: data.financialAccountId,
+      financialAccountId: data.financialAccountId ?? null,
       categoryId: data.categoryId,
       recurringRuleId: rule.id,
       kind: data.kind,
@@ -119,7 +124,7 @@ export async function createTransaction(_prev: TransactionFormState, formData: F
     await prisma.transaction.create({
       data: {
         userId,
-        financialAccountId: data.financialAccountId,
+        financialAccountId: data.financialAccountId ?? null,
         categoryId: data.categoryId,
         kind: data.kind,
         status,
@@ -159,7 +164,7 @@ export async function updateTransaction(id: string, _prev: TransactionFormState,
   await prisma.transaction.update({
     where: { id },
     data: {
-      financialAccountId: data.financialAccountId,
+      financialAccountId: data.financialAccountId ?? null,
       categoryId: data.categoryId,
       kind: data.kind,
       status,

@@ -18,21 +18,23 @@ export async function getAccountBalances(userId: string): Promise<Map<string, nu
 
   for (const tx of transactions) {
     const amount = toNumber(tx.amount);
-    const current = balances.get(tx.financialAccountId) ?? 0;
+    const accountId = tx.financialAccountId;
+    if (!accountId) continue;
+    const current = balances.get(accountId) ?? 0;
 
     switch (tx.kind) {
       case "INCOME":
-        balances.set(tx.financialAccountId, current + amount);
+        balances.set(accountId, current + amount);
         break;
       case "EXPENSE":
       case "INVESTMENT":
-        balances.set(tx.financialAccountId, current - amount);
+        balances.set(accountId, current - amount);
         break;
       case "ADJUSTMENT":
-        balances.set(tx.financialAccountId, current + amount);
+        balances.set(accountId, current + amount);
         break;
       case "TRANSFER":
-        balances.set(tx.financialAccountId, current - amount);
+        balances.set(accountId, current - amount);
         if (tx.transferToAccountId) {
           const destCurrent = balances.get(tx.transferToAccountId) ?? 0;
           balances.set(tx.transferToAccountId, destCurrent + amount);

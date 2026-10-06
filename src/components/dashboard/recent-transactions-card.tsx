@@ -14,7 +14,7 @@ type Row = {
   amount: unknown;
   date: Date;
   category: { name: string } | null;
-  financialAccount: { name: string };
+  financialAccount: { name: string } | null;
 };
 
 const STATUS_STYLES: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -50,7 +50,7 @@ export function RecentTransactionsCard({ transactions }: { transactions: Row[] }
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{tx.description}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {tx.category?.name ?? "Sem categoria"} · {tx.financialAccount.name} · {formatDate(tx.date)}
+                {tx.category?.name ?? "Sem categoria"} · {tx.financialAccount?.name ?? "Sem conta"} · {formatDate(tx.date)}
               </p>
             </div>
             <Badge variant={statusStyle.variant} className="shrink-0">

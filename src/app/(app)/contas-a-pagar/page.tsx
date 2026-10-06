@@ -32,7 +32,7 @@ export default async function ContasAPagarPage() {
               <p className="py-4 text-sm text-muted-foreground">Nenhuma conta vence hoje.</p>
             ) : (
               today.map((t) => (
-                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount.name} />
+                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount?.name ?? "Sem conta"} />
               ))
             )}
           </CardContent>
@@ -45,7 +45,7 @@ export default async function ContasAPagarPage() {
               <p className="py-4 text-sm text-muted-foreground">Nenhuma conta atrasada. 🎉</p>
             ) : (
               overdue.map((t) => (
-                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount.name} tone="overdue" />
+                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount?.name ?? "Sem conta"} tone="overdue" />
               ))
             )}
           </CardContent>
@@ -58,7 +58,7 @@ export default async function ContasAPagarPage() {
               <EmptyState icon="calendar-check" title="Nenhum vencimento futuro" />
             ) : (
               upcoming.map((t) => (
-                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount.name} />
+                <BillRow key={t.id} id={t.id} description={t.description} amount={Number(t.amount)} dueDate={t.dueDate!} kind={t.kind} categoryIcon={t.category?.icon} categoryColor={t.category?.color} accountName={t.financialAccount?.name ?? "Sem conta"} />
               ))
             )}
           </CardContent>

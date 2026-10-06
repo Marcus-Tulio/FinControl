@@ -217,7 +217,7 @@ model Category {
 model RecurringRule {
   id              String              @id @default(cuid())
   userId          String
-  financialAccountId String
+  financialAccountId String?
   categoryId      String?
   kind            TransactionKind
   description     String
@@ -244,7 +244,7 @@ model RecurringRule {
 model Transaction {
   id                  String            @id @default(cuid())
   userId              String
-  financialAccountId  String
+  financialAccountId  String?
   transferToAccountId String?
   categoryId          String?
   recurringRuleId     String?
@@ -266,7 +266,7 @@ model Transaction {
   updatedAt           DateTime          @updatedAt
 
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  financialAccount FinancialAccount @relation("AccountTransactions", fields: [financialAccountId], references: [id], onDelete: Cascade)
+  financialAccount FinancialAccount? @relation("AccountTransactions", fields: [financialAccountId], references: [id], onDelete: Cascade)
   transferToAccount FinancialAccount? @relation("TransferDestination", fields: [transferToAccountId], references: [id], onDelete: SetNull)
   category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   recurringRule   RecurringRule?    @relation(fields: [recurringRuleId], references: [id], onDelete: SetNull)
@@ -376,6 +376,8 @@ model Investment {
   quantity        Decimal        @default(0) @db.Decimal(18, 6)
   avgPrice        Decimal        @default(0) @db.Decimal(14, 4)
   currentPrice    Decimal        @default(0) @db.Decimal(14, 4)
+  yieldRate       Decimal?       @db.Decimal(10, 4)
+  yieldAnchorDate DateTime?
   notes           String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

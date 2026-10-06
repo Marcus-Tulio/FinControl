@@ -14,7 +14,7 @@ import type { InvestmentType } from "@prisma/client";
 
 type Investment = {
   id: string; name: string; type: InvestmentType; broker: string | null; ticker: string | null;
-  quantity: unknown; avgPrice: unknown; currentPrice: unknown; notes: string | null;
+  quantity: unknown; avgPrice: unknown; currentPrice: unknown; yieldRate: unknown; notes: string | null;
 };
 const emptyState: InvestmentFormState = {};
 
@@ -88,6 +88,20 @@ export function InvestmentFormDialog({ investment }: { investment?: Investment }
               <Label>Preço atual</Label>
               <Input name="currentPrice" type="number" step="0.0001" defaultValue={investment ? Number(investment.currentPrice) : 0} />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Rendimento % ao mês (opcional)</Label>
+            <Input
+              name="yieldRate"
+              type="number"
+              step="0.01"
+              placeholder="Ex: 0,90"
+              defaultValue={investment?.yieldRate != null ? Number(investment.yieldRate) : undefined}
+            />
+            <p className="text-xs text-muted-foreground">
+              Com um rendimento definido, o valor atual passa a crescer sozinho por juros compostos a partir de hoje.
+            </p>
           </div>
 
           <div className="space-y-1.5">

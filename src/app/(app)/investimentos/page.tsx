@@ -67,6 +67,11 @@ export default async function InvestimentosPage() {
                       <p className="text-xs text-muted-foreground">
                         {INVESTMENT_TYPE_LABELS[inv.type]}{inv.broker ? ` · ${inv.broker}` : ""}
                       </p>
+                      {inv.yieldRateNum != null && (
+                        <p className="mt-0.5 text-xs font-medium text-[var(--status-good)]">
+                          {formatPercent(inv.yieldRateNum / 100, 2)} ao mês
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-0.5">
                       <InvestmentFormDialog investment={serializeDecimals(inv)} />
@@ -81,7 +86,7 @@ export default async function InvestimentosPage() {
 
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                     <p>Qtd: {Number(inv.quantity)}</p>
-                    <p>Preço atual: {formatCurrency(inv.currentPrice as never)}</p>
+                    <p>Preço atual: {formatCurrency(inv.displayPrice)}</p>
                     <p>Aportado: {formatCurrency(inv.invested)}</p>
                     <p>Dividendos: {formatCurrency(inv.dividends)}</p>
                   </div>

@@ -76,8 +76,8 @@ function IncomeExpenseForm({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label>Conta</Label>
-        <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId" required>
+        <Label>Conta (opcional)</Label>
+        <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} name="financialAccountId">
           <SelectTrigger className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger>
           <SelectContent>
             {accounts.map((a) => (

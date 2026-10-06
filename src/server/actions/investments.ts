@@ -15,6 +15,7 @@ const investmentSchema = z.object({
   quantity: z.coerce.number().min(0).default(0),
   avgPrice: z.coerce.number().min(0).default(0),
   currentPrice: z.coerce.number().min(0).default(0),
+  yieldRate: z.preprocess((v) => (v === "" || v === undefined ? undefined : v), z.coerce.number().optional()),
   notes: z.string().optional(),
 });
 
@@ -23,7 +24,10 @@ export async function createInvestment(_prev: InvestmentFormState, formData: For
   const parsed = investmentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
 
-  const investment = await prisma.investment.create({ data: { ...parsed.data, userId } });
+  const yieldRate = parsed.data.yieldRate ?? null;
+  const investment = await prisma.investment.create({
+    data: { ...parsed.data, yieldRate, yieldAnchorDate: yieldRate !== null ? new Date() : null, userId },
+  });
 
   const initialAmount = parsed.data.quantity * parsed.data.avgPrice;
   if (initialAmount > 0) {
@@ -52,7 +56,17 @@ export async function updateInvestment(id: string, _prev: InvestmentFormState, f
   const parsed = investmentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dados inválidos" };
 
-  await prisma.investment.update({ where: { id }, data: parsed.data });
+  const newYieldRate = parsed.data.yieldRate ?? null;
+  const oldYieldRate = investment.yieldRate !== null ? Number(investment.yieldRate) : null;
+  const priceChanged = parsed.data.currentPrice !== Number(investment.currentPrice);
+  const yieldChanged = newYieldRate !== oldYieldRate;
+  const yieldAnchorDate =
+    newYieldRate === null ? null : priceChanged || yieldChanged || !investment.yieldAnchorDate ? new Date() : investment.yieldAnchorDate;
+
+  await prisma.investment.update({
+    where: { id },
+    data: { ...parsed.data, yieldRate: newYieldRate, yieldAnchorDate },
+  });
 
   revalidatePath("/investimentos");
   revalidatePath("/");
@@ -91,8 +105,10 @@ export async function addInvestmentMovement(investmentId: string, _prev: Investm
     data: { investmentId, type, amount, quantity, price, date: new Date(date) },
   });
 
+  const resetAnchor = investment.yieldRate !== null ? { yieldAnchorDate: new Date() } : {};
+
   if (type === "PRICE_UPDATE" && price) {
-    await prisma.investment.update({ where: { id: investmentId }, data: { currentPrice: price } });
+    await prisma.investment.update({ where: { id: investmentId }, data: { currentPrice: price, ...resetAnchor } });
   } else if (type === "CONTRIBUTION" && quantity) {
     const currentQty = Number(investment.quantity);
     const currentAvg = Number(investment.avgPrice);
@@ -100,7 +116,7 @@ export async function addInvestmentMovement(investmentId: string, _prev: Investm
     const newAvg = newQty > 0 ? (currentQty * currentAvg + amount) / newQty : currentAvg;
     await prisma.investment.update({
       where: { id: investmentId },
-      data: { quantity: newQty, avgPrice: newAvg, ...(price ? { currentPrice: price } : {}) },
+      data: { quantity: newQty, avgPrice: newAvg, ...(price ? { currentPrice: price, ...resetAnchor } : {}) },
     });
   } else if (type === "WITHDRAWAL" && quantity) {
     await prisma.investment.update({

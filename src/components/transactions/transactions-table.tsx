@@ -31,10 +31,10 @@ type Row = {
   dueDate: Date | null;
   isEssential: boolean;
   expenseType?: "FIXED" | "VARIABLE" | "EXTRAORDINARY" | null;
-  financialAccountId: string;
+  financialAccountId: string | null;
   categoryId: string | null;
   category: { name: string; color: string; icon: string } | null;
-  financialAccount: { name: string };
+  financialAccount: { name: string } | null;
 };
 
 type Account = { id: string; name: string };
@@ -131,7 +131,7 @@ export function TransactionsTable({
                     <span className="text-sm text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{tx.financialAccount.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{tx.financialAccount?.name ?? "Sem conta"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{formatDate(tx.date)}</TableCell>
                 <TableCell>
                   <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
